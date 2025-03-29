@@ -193,13 +193,3 @@ export const verifyEmail = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
-export const isAuth = async (req, res) => {
-  try {
-    return res.status(200).json({ message: "User is authenticated" });
-  } catch (err) {
-    console.error("Error during isAuth:", err);
-    res.status(500).json({ message: err.message });
-  }
-}
