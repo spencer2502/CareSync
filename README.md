@@ -1,2 +1,0 @@
-# CareSync
- HealthTech Application
