@@ -71,7 +71,7 @@ CareSync is a full-stack application for user authentication and email verificat
 4. Start the backend server:
 
    ```bash
-   npm start
+   npx nodemon
    ```
 
 5. The backend server will run on `http://localhost:4000`.
