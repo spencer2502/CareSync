@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import EmailVerify from "./pages/EmailVerify";
 import {ToastContainer} from "react-toastify"
 import "react-toastify/dist/ReactToastify.css";
+import Dashboard from "./pages/Dashboard";
 
 const App = () => {
   return (
