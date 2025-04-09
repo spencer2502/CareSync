@@ -5,7 +5,10 @@ import Login from "./pages/Login";
 import EmailVerify from "./pages/EmailVerify";
 import {ToastContainer} from "react-toastify"
 import "react-toastify/dist/ReactToastify.css";
-//import Dashboard from "./pages/Dashboard";
+import HospitalsPage from "./pages/Hospitals";
+import Hero from "./components/Hero";
+import Reports from "./pages/Reports";
+import EmergencyQR from "./pages/EmergencyQR";
 
 const App = () => {
   return (
@@ -15,6 +18,11 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/email-verify" element={<EmailVerify />} />
+        <Route path="/hospital" element={<HospitalsPage />} />
+        <Route path="/hero" element={<Hero />} />
+        <Route path="/Reports" element={<Reports />} />
+        <Route path="/EmergencyQR" element={<EmergencyQR />} />
+
       </Routes>
     </div>
   );
