@@ -83,7 +83,7 @@ export default function Hero() {
                   <line x1="12" y1="16" x2="12.01" y2="16"></line>
                 </svg>
               </div>
-              <h3 className="text-blue-900 font-medium text-lg">Emergency</h3>
+              <h3 className="text-blue-900 font-medium text-lg">Emergency QR</h3>
             </div>
           </div>
           
