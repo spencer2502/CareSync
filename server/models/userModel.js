@@ -23,13 +23,26 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    resetOtp: {
+    dob: {
+      type: Date,
+    },
+    patientId: {
       type: String,
       default: "",
     },
-    resetOtpExpireAt: {
-      type: Number,
-      default: 0,
+    phone: {
+      type: String,
+      required: true,
+    },
+    records: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "record",
+      },
+    ],
+    emergencyQrCode: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "emergencyQrCode",
     },
     isVerified: {
       type: Boolean,
@@ -38,7 +51,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 ); // Adds createdAt & updatedAt fields
-
 
 const userModel = mongoose.models.user || mongoose.model("user", userSchema);
 

@@ -2,12 +2,14 @@ import userModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import transporter from "../config/nodemailer.js";
+import crypto from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
 export const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone } = req.body;
 
   // Validate input fields
-  if (!name || !email || !password) {
+  if (!name || !email || !password|| !phone) {
     return res.json({success:false, message: "All fields are required" });
   }
   if (password.length < 6) {
@@ -17,6 +19,9 @@ export const register = async (req, res) => {
   }
   if (!email.includes("@")) {
     return res.status(400).json({ message: "Invalid email format" });
+  }
+  if (phone.length <10) {
+    return res.status(400).json({ message: "Phone number must be at least 10 digits long" });
   }
 
   try {
@@ -29,11 +34,26 @@ export const register = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate unique patient ID
+    const generatePatientId = (name,phone, hashedPassword) => {
+      const randomSeed = uuidv4(); // Generate a random UUID
+      const combined = `${name}${phone}${hashedPassword}${randomSeed}`; 
+
+      const hash = crypto.createHash("sha256").update(combined).digest("hex");
+      const base36Code = BigInt('0x'+hash).toString(36).slice(0, 8); // Convert to base 36 and take the first 8 characters
+
+      return base36Code.toUpperCase(); 
+
+    }
+
     // Create new user
     const user = new userModel({
       name,
       email,
       password: hashedPassword,
+      phone,
+      patientId: generatePatientId(name,phone, hashedPassword),
+      
     });
 
     await user.save();
@@ -81,13 +101,13 @@ export const login = async (req, res) => {
     }
 
     // Check if email is verified
-    // if (!user.isVerified) {
-    //   return res
-    //     .json({
-    //       success: false,
-    //       message: "Email not verified. Please verify your email first.",
-    //     });
-    // }
+    if (!user.isVerified) {
+      return res
+        .json({
+          success: false,
+          message: "Email not verified. Please verify your email first.",
+        });
+    }
 
     // Validate password
     const isMatch = await bcrypt.compare(password, user.password);
