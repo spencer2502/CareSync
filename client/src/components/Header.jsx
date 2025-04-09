@@ -1,5 +1,4 @@
 import React, { useContext, useEffect } from "react";
-import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
@@ -13,32 +12,37 @@ const Header = () => {
   }, [userData]);
 
   return (
-    <div className="flex flex-col items-center mt-20 px-4 text-center text-gray-800">
-      <img
-        src={assets.header_img}
-        alt=""
-        className="w-36 h-36 rounded-full mb-1 "
-      />
-
-      <h1 className="flex items-center gap-2 text-xl sm:text-3xl font-medium mb-2">
-      </h1>
-
-      <h2 className="text-3xl sm:text-5xl font-semibold mb-4">
-      Smart & Secure Medical Records
-      </h2>
-
-      <p className="mb-8 max-w-md">
-      CareSync revolutionizes healthcare by providing a secure, seamless, and 
-  centralized platform for managing medical records. Instantly access, store, 
-  and share patient data with advanced security, ensuring privacy and efficiency 
-  for hospitals, doctors, and patients alike.
-      </p>
+    <div className="w-full bg-blue-50 py-42 ">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col items-center text-center">
+          <div className="bg-white rounded-full w-40 h-40 flex items-center justify-center shadow-lg mb-8">
+            <div className="flex items-center">
+              <span className="text-4xl font-semibold">
+                <span className="text-blue-900">Care</span>
+                <span className="text-green-500">Sync</span>
+              </span>
+            </div>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">
+            Smart & Secure Medical Records
+          </h1>
+          
+          <p className="text-gray-700 max-w-2xl mb-8 text-center leading-relaxed">
+            CareSync revolutionizes healthcare by providing a secure,
+            seamless, and centralized platform for managing medical
+            records. Instantly access, store, and share patient data with
+            advanced security, ensuring privacy and efficiency for
+            hospitals, doctors, and patients alike.
+          </p>
 
       <button className="border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-100 transition-all" 
        onClick={() => navigate("/login")}>
         Get Started
       </button>
     </div>
+    </div>
+      </div>
   );
 };
 
