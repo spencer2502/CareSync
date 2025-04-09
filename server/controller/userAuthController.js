@@ -5,7 +5,7 @@ import transporter from "../config/nodemailer.js";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 
-export const register = async (req, res) => {
+export const userRegister = async (req, res) => {
   const { name, email, password, phone } = req.body;
 
   // Validate input fields
@@ -86,7 +86,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+export const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -140,7 +140,7 @@ export const login = async (req, res) => {
 };
 
 
-export const logout = async (req, res) => {
+export const userLogout = async (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
@@ -154,7 +154,7 @@ export const logout = async (req, res) => {
   }
 };
 
-export const sendVerifyOtp = async (req, res) => {
+export const userSendVerifyOtp = async (req, res) => {
   try {
     const { userId } = req.body;
     const user = await userModel.findById(userId);
@@ -184,7 +184,7 @@ export const sendVerifyOtp = async (req, res) => {
   }
 };
 
-export const verifyEmail = async (req, res) => {
+export const userVerifyEmail = async (req, res) => {
   const { userId, otp } = req.body;
 
   if (!userId || !otp) {
