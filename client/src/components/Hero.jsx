@@ -1,6 +1,8 @@
 import React from 'react';
 
 export default function Hero() {
+
+  
   return (
     <div className="w-full bg-gray-50 py-12">
       <div className="container mx-auto px-4">
