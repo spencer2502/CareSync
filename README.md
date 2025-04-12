@@ -1,6 +1,6 @@
 # CareSync API and Client
 
-CareSync is a full-stack application for user authentication and email verification. It includes a backend API and a React-based frontend for user interaction.
+CareSync is a full-stack application for user authentication, email verification, and medical record management. It includes a backend API and a React-based frontend for user interaction.
 
 ## Features
 
@@ -11,6 +11,9 @@ CareSync is a full-stack application for user authentication and email verificat
 - Email verification using OTP.
 - Secure cookie-based session management.
 - Logout functionality to clear user sessions.
+- **Medical Record Management**:
+  - Create and store medical records with file attachments.
+  - Upload files to Cloudinary for secure storage.
 
 ### Frontend
 
@@ -30,6 +33,8 @@ CareSync is a full-stack application for user authentication and email verificat
 - JWT (JSON Web Tokens)
 - Nodemailer for email services
 - dotenv for environment variable management
+- Cloudinary for file storage
+- Multer for file uploads
 
 ### Frontend
 
@@ -65,6 +70,9 @@ CareSync is a full-stack application for user authentication and email verificat
    SMTP_USER=<your-smtp-user>
    SMTP_PASS=<your-smtp-password>
    SENDER_EMAIL=<your-sender-email>
+   CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
+   CLOUDINARY_API_KEY=<your-cloudinary-api-key>
+   CLOUDINARY_SECRET_KEY=<your-cloudinary-secret-key>
    NODE_ENV=development
    ```
 
@@ -122,33 +130,19 @@ CareSync/
 ├── controller/             # Backend controllers
 │   ├── authController.js   # Authentication logic
 │   ├── userController.js   # User-related logic
+│   ├── recordController.js # Medical record management logic
 ├── middleware/             # Backend middleware
 │   ├── userAuth.js         # JWT-based authentication middleware
+│   ├── multerMiddleware.js # File upload middleware
 ├── models/                 # Backend models
 │   ├── userModel.js        # User schema definition
+│   ├── recordModel.js      # Medical record schema definition
 ├── routes/                 # Backend routes
 │   ├── authRoutes.js       # Authentication routes
 │   ├── userRoutes.js       # User-related routes
 ├── server.js               # Main backend server file
 └── README.md               # Project documentation
 ```
-
-## UI Features
-
-### Pages
-
-1. **Home Page**: Displays a personalized greeting and user information.
-2. **Login Page**: Allows users to log in or register.
-3. **Email Verification Page**: Placeholder for email verification functionality.
-
-### Components
-
-- **Navbar**: Navigation bar with login/logout functionality.
-- **Header**: Displays user-specific data and a welcome message.
-
-### Context
-
-- **AppContext**: Manages global state for user authentication and data.
 
 ## API Endpoints
 
@@ -164,9 +158,55 @@ CareSync/
 
 ### User Routes (`/api/user`)
 
-| Method | Endpoint | Description        | Authentication Required |
-| ------ | -------- | ------------------ | ----------------------- |
-| GET    | `/data`  | Fetch user details | Yes                     |
+| Method | Endpoint           | Description                     | Authentication Required |
+| ------ | ------------------ | ------------------------------- | ----------------------- |
+| GET    | `/data`            | Fetch user details              | Yes                     |
+| POST   | `/createNewRecord` | Create a new medical record     | Yes                     |
+
+#### `/createNewRecord` Endpoint Details
+
+- **Method**: `POST`
+- **URL**: `/api/user/createNewRecord`
+- **Authentication**: Required (JWT-based)
+- **Description**: Creates a new medical record with optional file attachments.
+- **Request Body**:
+  ```json
+  {
+    "patientId": "string",
+    "doctorId": "string",
+    "recordType": "string",
+    "title": "string",
+    "description": "string",
+    "isEmergencyAccessible": "boolean",
+    "sharedWith": ["userId1", "userId2"]
+  }
+  ```
+- **File Upload**: Accepts up to 5 files (via `multipart/form-data`).
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "success": true,
+      "message": "Record created successfully",
+      "data": {
+        "recordId": "string",
+        "title": "string",
+        "attachments": [
+          {
+            "fileUrl": "string",
+            "fileName": "string"
+          }
+        ]
+      }
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "success": false,
+      "message": "Error message"
+    }
+    ```
 
 ## License
 

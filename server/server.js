@@ -23,6 +23,5 @@ app.use(cors({ origin:allowedOrigins, credentials: true }));
 app.get("/", (req, res) => res.send("Hello World!"));
 app.use("/api/auth", authRouter);  
 app.use("/api/user", userRouter); 
-console.log("API KEY CHECK:", process.env.CLOUDINARY_API_KEY);
 
 app.listen(port, () => console.log(`Server is running on port ${port}`));
