@@ -158,10 +158,11 @@ CareSync/
 
 ### User Routes (`/api/user`)
 
-| Method | Endpoint           | Description                     | Authentication Required |
-| ------ | ------------------ | ------------------------------- | ----------------------- |
-| GET    | `/data`            | Fetch user details              | Yes                     |
-| POST   | `/createNewRecord` | Create a new medical record     | Yes                     |
+| Method | Endpoint           | Description                 | Authentication Required |
+| ------ | ------------------ | --------------------------- | ----------------------- |
+| GET    | `/data`            | Fetch user details          | Yes                     |
+| POST   | `/createNewRecord` | Create a new medical record | Yes                     |
+| POST   | `/acceptRequest`   | Accept an access request    | Yes                     |
 
 #### `/createNewRecord` Endpoint Details
 
@@ -198,6 +199,73 @@ CareSync/
           }
         ]
       }
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "success": false,
+      "message": "Error message"
+    }
+    ```
+
+#### `/acceptRequest` Endpoint Details
+
+- **Method**: `POST`
+- **URL**: `/api/user/acceptRequest`
+- **Authentication**: Required (JWT-based)
+- **Description**: Accepts an access request for a user's medical records.
+- **Request Body**:
+  ```json
+  {
+    "requestId": "string"
+  }
+  ```
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "success": true,
+      "message": "Request accepted"
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "success": false,
+      "message": "Error message"
+    }
+    ```
+
+### Doctor Routes (`/api/doctor`)
+
+| Method | Endpoint         | Description                        | Authentication Required |
+| ------ | ---------------- | ---------------------------------- | ----------------------- |
+| GET    | `/data`          | Fetch doctor details               | Yes                     |
+| POST   | `/sendRequest`   | Send access request to a patient   | Yes                     |
+| GET    | `/getAllRecords` | Fetch all approved access requests | Yes                     |
+
+#### `/getAllRecords` Endpoint Details
+
+- **Method**: `GET`
+- **URL**: `/api/doctor/getAllRecords`
+- **Authentication**: Required (JWT-based)
+- **Description**: Fetches all approved access requests for the authenticated doctor.
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "success": true,
+      "records": [
+        {
+          "patient": {
+            "name": "string",
+            "email": "string"
+          },
+          "expiresAt": "string",
+          "createdAt": "string"
+        }
+      ]
     }
     ```
   - **Error**:
