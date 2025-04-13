@@ -55,9 +55,11 @@ export const doctorRegister = async (req, res) => {
 
     await doctor.save();
 
-    const token = jwt.sign({ id: doctor._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: doctor._id, role: "Doctor" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -119,13 +121,10 @@ export const doctorLogin = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
-      { id: doctor._id.toString() },
+      { id: doctor._id, role: "Doctor" },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
+      { expiresIn: "7d" }
     );
 
     // Store token in cookie

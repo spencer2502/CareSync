@@ -4,21 +4,27 @@ const doctorAuth = async (req, res, next) => {
   const { token } = req.cookies;
 
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized - No token" });
   }
 
   try {
-    const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (tokenDecode.id) {
-      req.body.doctorId = tokenDecode.id;
+    if (decoded.id && decoded.role === "Doctor") {
+      req.doctor = {
+        id: decoded.id,
+        role: decoded.role,
+        name: decoded.name || "",
+      };
+      next();
     } else {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only doctors allowed" });
     }
-    next();
   } catch (err) {
-    console.error("Error during authentication:", err);
-    return res.status(401).json({ message: err.message });
+    console.error("Doctor auth error:", err);
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 

@@ -1,23 +1,27 @@
 import recordModel from "../models/recordModel.js";
+import doctorModel from "../models/doctorModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import path from "path";
+import userModel from "../models/userModel.js";
 
+// Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_SECRET_KEY,
 });
 
-// You can move this into a utils file
+// Utility function to upload file to Cloudinary
 const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) return null;
+
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
     });
-    console.log("File uploaded to Cloudinary:", response.url);
-    fs.unlinkSync(localFilePath); // Clean up local file
+
+    console.log("File uploaded to Cloudinary:", response.secure_url);
+    fs.unlinkSync(localFilePath); // delete local file after upload
     return response;
   } catch (err) {
     fs.unlinkSync(localFilePath);
@@ -26,6 +30,7 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
+// Controller
 export const createRecord = async (req, res) => {
   try {
     const {
@@ -38,16 +43,38 @@ export const createRecord = async (req, res) => {
       sharedWith,
     } = req.body;
 
-    if (!patientId || !doctorId || !title) {
+    // const userId = req.body.userId; // Injected by userAuth middleware
+    const userId = req.user?.id;
+
+
+    if (!doctorId || !title) {
       return res.status(400).json({
         success: false,
-        message: "Patient ID, Doctor ID, and title are required.",
+        message: "Doctor ID and title are required.",
       });
     }
 
-    // Upload files to Cloudinary
-    const attachments = [];
+    // Step 1: Find doctor by doctorId string
+    let doctorObjectId = null;
+    const doctor = await doctorModel.findOne({ doctorId: doctorId.trim() });
+    if (!doctor) {
+      return res.status(400).json({
+        success: false,
+        message: "No doctor found with the provided doctorId",
+      });
+    } 
+    doctorObjectId = doctor._id;
 
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "No user found with the provided userId",
+      });
+    }
+
+    // Step 2: Upload files if any
+    const attachments = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const uploaded = await uploadOnCloudinary(file.path);
@@ -60,10 +87,12 @@ export const createRecord = async (req, res) => {
       }
     }
 
-    // Create and save record
+    // Step 3: Save record
     const newRecord = new recordModel({
-      patient: patientId,
-      doctor: doctorId,
+      uploadedBy: userId,
+      patientId: user.patientId,
+      doctor: doctorObjectId,
+      doctorId: doctorId,
       recordType,
       title,
       description,

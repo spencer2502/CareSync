@@ -9,8 +9,8 @@ export const userRegister = async (req, res) => {
   const { name, email, password, phone } = req.body;
 
   // Validate input fields
-  if (!name || !email || !password|| !phone) {
-    return res.json({success:false, message: "All fields are required" });
+  if (!name || !email || !password || !phone) {
+    return res.json({ success: false, message: "All fields are required" });
   }
   if (password.length < 6) {
     return res
@@ -20,31 +20,34 @@ export const userRegister = async (req, res) => {
   if (!email.includes("@")) {
     return res.status(400).json({ message: "Invalid email format" });
   }
-  if (phone.length <10) {
-    return res.status(400).json({ message: "Phone number must be at least 10 digits long" });
+  if (phone.length < 10) {
+    return res
+      .status(400)
+      .json({ message: "Phone number must be at least 10 digits long" });
   }
 
   try {
     // Check if user already exists
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
-      return res.json({success:false , message: "User already exists" });
+      return res.json({ success: false, message: "User already exists" });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate unique patient ID
-    const generatePatientId = (name,phone, hashedPassword) => {
+    const generatePatientId = (name, phone, hashedPassword) => {
       const randomSeed = uuidv4(); // Generate a random UUID
-      const combined = `${name}${phone}${hashedPassword}${randomSeed}`; 
+      const combined = `${name}${phone}${hashedPassword}${randomSeed}`;
 
       const hash = crypto.createHash("sha256").update(combined).digest("hex");
-      const base36Code = BigInt('0x'+hash).toString(36).slice(0, 8); // Convert to base 36 and take the first 8 characters
+      const base36Code = BigInt("0x" + hash)
+        .toString(36)
+        .slice(0, 8); // Convert to base 36 and take the first 8 characters
 
-      return base36Code.toUpperCase(); 
-
-    }
+      return base36Code.toUpperCase();
+    };
 
     // Create new user
     const user = new userModel({
@@ -52,16 +55,17 @@ export const userRegister = async (req, res) => {
       email,
       password: hashedPassword,
       phone,
-      patientId: generatePatientId(name,phone, hashedPassword),
-      
+      patientId: generatePatientId(name, phone, hashedPassword),
     });
 
     await user.save();
 
     // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: "User" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -72,10 +76,10 @@ export const userRegister = async (req, res) => {
 
     // Extract token and user ID from cookie
     const userCookie = {
-        token: token,
-        userId: user._id
+      token: token,
+      userId: user._id,
     };
-    console.log('User registration details:', userCookie);
+    console.log("User registration details:", userCookie);
 
     return res
       .status(201)
@@ -102,11 +106,10 @@ export const userLogin = async (req, res) => {
 
     // Check if email is verified
     if (!user.isVerified) {
-      return res
-        .json({
-          success: false,
-          message: "Email not verified. Please verify your email first.",
-        });
+      return res.json({
+        success: false,
+        message: "Email not verified. Please verify your email first.",
+      });
     }
 
     // Validate password
@@ -117,11 +120,9 @@ export const userLogin = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user._id.toString() },
+      { id: user._id, role: "User" },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
+      { expiresIn: "7d" }
     );
 
     // Store token in cookie
@@ -132,13 +133,14 @@ export const userLogin = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    return res.status(200).json({success:true, message: "Login successful", token });
+    return res
+      .status(200)
+      .json({ success: true, message: "Login successful", token });
   } catch (err) {
     console.error("Error during login:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const userLogout = async (req, res) => {
   try {

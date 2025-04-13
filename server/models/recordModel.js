@@ -4,15 +4,25 @@ const { Schema } = mongoose;
 
 const recordSchema = new mongoose.Schema(
   {
-    patient: {
-      type: Schema.Types.ObjectId,
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+    },
+    patientId: {
+      // type: Schema.Types.ObjectId,
+      // ref: "user",
+      type: String,
+      
+    },
+    doctorId: {
+      // type: Schema.Types.ObjectId,
+      // ref: "doctor",
+      type: String,
       required: true,
     },
     doctor: {
-      type: Schema.Types.ObjectId,      
+      type: mongoose.Schema.Types.ObjectId,
       ref: "doctor",
-      required: true,
     },
     recordType: {
       type: String,
