@@ -34,7 +34,6 @@ export const getDoctorData = async (req, res) => {
   }
 };
 
-// export const sendRequest = async (req, res) => {
 //   try {
 //     const  doctorId  = req.doctor.body;
 //     const { userId } = req.body; // patientId
