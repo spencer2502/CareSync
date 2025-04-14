@@ -34,12 +34,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    records: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "record",
-      },
-    ],
     emergencyQrCode: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "emergencyQrCode",

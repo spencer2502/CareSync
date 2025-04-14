@@ -66,18 +66,6 @@ const recordSchema = new mongoose.Schema(
         },
       },
     ],
-    sharedWith: [
-      {
-        user: {
-          type: Schema.Types.ObjectId,
-          ref: "user",
-        },
-        sharedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
     isEmergencyAccessible: {
       type: Boolean,
       default: false,
