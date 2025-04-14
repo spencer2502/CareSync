@@ -1,6 +1,7 @@
 import doctorModel from "../models/doctorModel.js";
 import accessControlModel from "../models/accessModel.js";
 import userModel from "../models/userModel.js";
+import recordModel from "../models/recordModel.js";
 
 export const getDoctorData = async (req, res) => {
   try {
@@ -107,31 +108,54 @@ export const sendRequest = async (req, res) => {
   }
 };
 
+
 export const getAllRecords = async (req, res) => {
   try {
     const doctorId = req.doctor.id; // pulled from JWT
 
+    // Validate doctor
     const doctor = await doctorModel.findById(doctorId);
     if (!doctor) {
-      return res.json({ success: false, message: "Doctor not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Doctor not found" });
     }
 
-    const records = await accessControlModel
+    // Get all valid access grants
+    const accessList = await accessControlModel
       .find({
         doctor: doctorId,
         request: true,
         expiresAt: { $gt: new Date() }, // not expired
       })
-      .populate("patient", "name email");
+      .populate("patient", "name email _id");
 
-    if (records.length === 0) {
-      return res.json({
+    if (accessList.length === 0) {
+      return res.status(404).json({
         success: false,
         message: "No valid access requests found",
       });
     }
 
-    return res.json({ success: true, records });
+    // Fetch records for each patient
+    const data = await Promise.all(
+      accessList.map(async (access) => {
+        const patientRecords = await recordModel.find({
+          uploadedBy: access.patient._id,
+        });
+
+        return {
+          patient: {
+            id: access.patient._id,
+            name: access.patient.name,
+            email: access.patient.email,
+          },
+          records: patientRecords,
+        };
+      })
+    );
+
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("Error fetching records:", error);
     res

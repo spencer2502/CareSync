@@ -31,14 +31,14 @@ export const getUserData = async (req, res) => {
 export const getAllRequests = async (req, res) => {
   try {
     const userId = req.user.id; // corrected userId assignment;
-    const requests = await accessControlModel.find({ userId });
+    const requests = await accessControlModel.find({ patient: userId });
     if (!requests.length) {
       return res.json({ success: false, message: "No records found" });
     }
 
     res.json({
       success: true,
-      records: request,
+      records: requests,
     });
   } catch (error) {
     console.error("Error updating record access:", error);
