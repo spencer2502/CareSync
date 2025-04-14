@@ -158,11 +158,14 @@ CareSync/
 
 ### User Routes (`/api/user`)
 
-| Method | Endpoint           | Description                 | Authentication Required |
-| ------ | ------------------ | --------------------------- | ----------------------- |
-| GET    | `/data`            | Fetch user details          | Yes                     |
-| POST   | `/createNewRecord` | Create a new medical record | Yes                     |
-| POST   | `/acceptRequest`   | Accept an access request    | Yes                     |
+| Method | Endpoint           | Description                            | Authentication Required |
+| ------ | ------------------ | -------------------------------------- | ----------------------- |
+| GET    | `/data`            | Fetch user details                     | Yes                     |
+| POST   | `/createNewRecord` | Create a new medical record            | Yes                     |
+| GET    | `/getAllRequests`  | Fetch all access requests              | Yes                     |
+| POST   | `/acceptRequest`   | Accept an access request               | Yes                     |
+| GET    | `/getUserRecords`  | Fetch all records uploaded by the user | Yes                     |
+| GET    | `/getRecord/:id`   | Fetch a specific record by ID          | Yes                     |
 
 #### `/createNewRecord` Endpoint Details
 
@@ -209,6 +212,75 @@ CareSync/
     }
     ```
 
+#### `/getUserRecords` Endpoint Details
+
+- **Method**: `GET`
+- **URL**: `/api/user/getUserRecords`
+- **Authentication**: Required (JWT-based)
+- **Description**: Fetches all medical records uploaded by the authenticated user.
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "success": true,
+      "records": [
+        {
+          "title": "string",
+          "description": "string",
+          "attachments": [
+            {
+              "fileUrl": "string",
+              "fileName": "string"
+            }
+          ],
+          "createdAt": "string"
+        }
+      ]
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "success": false,
+      "message": "Error message"
+    }
+    ```
+
+#### `/getRecord/:id` Endpoint Details (User)
+
+- **Method**: `GET`
+- **URL**: `/api/user/getRecord/:id`
+- **Authentication**: Required (JWT-based)
+- **Description**: Fetches a specific medical record by its ID.
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "success": true,
+      "data": {
+        "title": "string",
+        "description": "string",
+        "attachments": [
+          {
+            "fileUrl": "string",
+            "fileName": "string"
+          }
+        ],
+        "doctor": {
+          "name": "string",
+          "specialty": "string"
+        }
+      }
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "success": false,
+      "message": "Error message"
+    }
+    ```
+
 #### `/acceptRequest` Endpoint Details
 
 - **Method**: `POST`
@@ -244,6 +316,7 @@ CareSync/
 | GET    | `/data`          | Fetch doctor details               | Yes                     |
 | POST   | `/sendRequest`   | Send access request to a patient   | Yes                     |
 | GET    | `/getAllRecords` | Fetch all approved access requests | Yes                     |
+| GET    | `/getRecord/:id` | Fetch a specific record by ID      | Yes                     |
 
 #### `/getAllRecords` Endpoint Details
 
@@ -266,6 +339,41 @@ CareSync/
           "createdAt": "string"
         }
       ]
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "success": false,
+      "message": "Error message"
+    }
+    ```
+
+#### `/getRecord/:id` Endpoint Details (Doctor)
+
+- **Method**: `GET`
+- **URL**: `/api/doctor/getRecord/:id`
+- **Authentication**: Required (JWT-based)
+- **Description**: Fetches a specific medical record by its ID for the authenticated doctor.
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "success": true,
+      "data": {
+        "title": "string",
+        "description": "string",
+        "attachments": [
+          {
+            "fileUrl": "string",
+            "fileName": "string"
+          }
+        ],
+        "doctor": {
+          "name": "string",
+          "specialty": "string"
+        }
+      }
     }
     ```
   - **Error**:
