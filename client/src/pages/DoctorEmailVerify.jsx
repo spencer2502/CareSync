@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const UserEmailVerify = () => {
+const DoctorEmailVerify = () => {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0); // Timer for resend OTP cooldown
@@ -21,11 +21,11 @@ const UserEmailVerify = () => {
     setLoading(true);
 
     try {
-      // Assuming user-specific OTP validation
-      const { data } = await axios.post("/api/user/verify-otp", { otp });
+      // Assuming doctor-specific OTP validation
+      const { data } = await axios.post("/api/doctor/verify-otp", { otp });
       if (data.success) {
         toast.success("OTP Verified successfully!");
-        navigate("/user-dashboard");
+        navigate("/doctor-dashboard");
       } else {
         toast.error("OTP verification failed.");
       }
@@ -39,7 +39,7 @@ const UserEmailVerify = () => {
   const handleResendOtp = async () => {
     try {
       // Simulate API call to resend OTP
-      const { data } = await axios.post("/api/user/resend-otp", { email: "user_email" });
+      const { data } = await axios.post("/api/doctor/resend-otp", { email: "doctor_email" });
       if (data.success) {
         toast.success("OTP sent successfully!");
         setResendTimer(30); // Set cooldown timer for resend OTP
@@ -77,7 +77,7 @@ const UserEmailVerify = () => {
         className="relative z-10 w-full max-w-md backdrop-blur-lg bg-white/80 border border-indigo-200 shadow-2xl rounded-3xl px-8 py-10"
       >
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-indigo-700">Email Verification</h2>
+          <h2 className="text-3xl font-bold text-indigo-700">Doctor Email Verification</h2>
           <p className="text-sm text-gray-500">Please enter the OTP sent to your email address.</p>
         </div>
 
@@ -136,4 +136,4 @@ const UserEmailVerify = () => {
   );
 };
 
-export default UserEmailVerify;
+export default DoctorEmailVerify;
