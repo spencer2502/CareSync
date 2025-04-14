@@ -1,7 +1,7 @@
 import express from "express";
 import userAuth from "../middleware/userAuth.js";
 
-import { getUserData,getAllRequests,acceptRequest } from "../controller/userController.js";
+import { getUserData,getAllRequests,acceptRequest, getUserRecords } from "../controller/userController.js";
 
 import { upload } from "../middleware/multerMiddleware.js";
 
@@ -21,5 +21,9 @@ userRouter.post(
 userRouter.get("/getAllRequests", userAuth, getAllRequests);
 
 userRouter.post("/acceptRequest", userAuth, acceptRequest);
+
+userRouter.get("/getUserRecords", userAuth,
+  getUserRecords
+)
 
 export default userRouter;
