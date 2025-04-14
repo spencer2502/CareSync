@@ -5,7 +5,7 @@ import { getUserData,getAllRequests,acceptRequest, getUserRecords } from "../con
 
 import { upload } from "../middleware/multerMiddleware.js";
 
-import { createRecord } from "../controller/recordController.js";
+import { createRecord, getRecord } from "../controller/recordController.js";
 
 const userRouter = express.Router();
 
@@ -25,5 +25,7 @@ userRouter.post("/acceptRequest", userAuth, acceptRequest);
 userRouter.get("/getUserRecords", userAuth,
   getUserRecords
 )
+
+userRouter.get("/getRecord/:id", userAuth, getRecord); // get record by id
 
 export default userRouter;

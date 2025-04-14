@@ -46,7 +46,6 @@ export const createRecord = async (req, res) => {
     // const userId = req.body.userId; // Injected by userAuth middleware
     const userId = req.user?.id;
 
-
     if (!doctorId || !title) {
       return res.status(400).json({
         success: false,
@@ -62,7 +61,7 @@ export const createRecord = async (req, res) => {
         success: false,
         message: "No doctor found with the provided doctorId",
       });
-    } 
+    }
     doctorObjectId = doctor._id;
 
     const user = await userModel.findById(userId);
@@ -110,6 +109,41 @@ export const createRecord = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating record:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getRecord = async (req, res) => {
+  try {
+    const  recordId  = req.params.id;
+
+    if (!recordId) {
+      return res.status(400).json({
+        success: false,
+        message: "Record ID is required.",
+      });
+    }
+
+    const record = await recordModel
+      .findById(recordId)
+      .populate("doctor", "name specialty");
+
+    if (!record) {
+      return res.status(404).json({
+        success: false,
+        message: "Record not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: record,
+    });
+  } catch (error) {
+    console.error("Error fetching record:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
