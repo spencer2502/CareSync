@@ -1,6 +1,7 @@
 import accessControlModel from "../models/accessModel.js";
 import recordModel from "../models/recordModel.js";
 import userModel from "../models/userModel.js";
+import { logAccess } from "../utils/auditLogger.js";
 
 export const getUserData = async (req, res) => {
   try {
@@ -76,6 +77,14 @@ export const getUserRecords = async (req, res) => {
     if (!records.length) {
       return res.json({ success: false, message: "No records found" });
     }
+
+    await logAccess({
+      actorId: userId,
+      actorRole: 'user',
+      action: 'view',
+      recordId,
+      ipAddress: req.ip,
+    })
 
     res.json({
       success: true,

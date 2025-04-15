@@ -39,6 +39,6 @@ const auditLogSchema = new mongoose.Schema({
     }
 })
 
-const auditLogModel = mongoose.models.AuditLog || mongoose.model("AuditLog", auditLogSchema);
+const auditLogModel = mongoose.models.auditLog || mongoose.model("auditLog", auditLogSchema);
 
 export default auditLogModel;

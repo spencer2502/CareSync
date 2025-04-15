@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import transporter from "../config/nodemailer.js";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
+import { logAccess } from "../utils/auditLogger.js";
+
 
 export const userRegister = async (req, res) => {
   const { name, email, password, phone } = req.body;
