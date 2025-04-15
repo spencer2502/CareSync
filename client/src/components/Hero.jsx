@@ -1,8 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Hero() {
-
-  
   return (
     <div className="w-full bg-gray-50 py-12">
       <div className="container mx-auto px-4">
@@ -18,7 +17,7 @@ export default function Hero() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {/* User Card */}
-            <div className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
+            <Link to="/user" className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0c4a6e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -26,10 +25,10 @@ export default function Hero() {
                 </svg>
               </div>
               <h3 className="text-blue-900 font-medium text-lg">User</h3>
-            </div>
+            </Link>
             
             {/* Records Card */}
-            <div className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
+            <Link to="../reports" className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0c4a6e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -40,10 +39,10 @@ export default function Hero() {
                 </svg>
               </div>
               <h3 className="text-blue-900 font-medium text-lg">Records</h3>
-            </div>
+            </Link>
             
             {/* Review Card */}
-            <div className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
+            <Link to="/review" className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0c4a6e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                   <path d="M9 11l3 3L22 4"></path>
@@ -51,10 +50,10 @@ export default function Hero() {
                 </svg>
               </div>
               <h3 className="text-blue-900 font-medium text-lg">Review</h3>
-            </div>
+            </Link>
             
             {/* History Card */}
-            <div className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
+            <Link to="/history" className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0c4a6e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                   <circle cx="12" cy="12" r="10"></circle>
@@ -62,10 +61,10 @@ export default function Hero() {
                 </svg>
               </div>
               <h3 className="text-blue-900 font-medium text-lg">History</h3>
-            </div>
+            </Link>
             
             {/* Hospitals Card */}
-            <div className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
+            <Link to="../hospital" className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0c4a6e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -74,10 +73,10 @@ export default function Hero() {
                 </svg>
               </div>
               <h3 className="text-blue-900 font-medium text-lg">Hospitals</h3>
-            </div>
+            </Link>
             
             {/* Emergency Card */}
-            <div className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
+            <Link to="../EmergencyQr" className="bg-white border-solid border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center h-40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0c4a6e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                   <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
@@ -86,11 +85,11 @@ export default function Hero() {
                 </svg>
               </div>
               <h3 className="text-blue-900 font-medium text-lg">Emergency QR</h3>
-            </div>
+            </Link>
           </div>
           
           {/* Help Card - Full Width */}
-          <div className="mt-6 bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl p-6 flex flex-col items-center justify-center h-32 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer">
+          <Link to="/help" className="mt-6 bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl p-6 flex flex-col items-center justify-center h-32 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer">
             <div className="flex items-center justify-center h-16 w-16 rounded-full bg-white/20 mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -99,7 +98,7 @@ export default function Hero() {
               </svg>
             </div>
             <h3 className="text-white font-medium text-lg">Help</h3>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

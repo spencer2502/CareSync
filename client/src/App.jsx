@@ -9,7 +9,10 @@ import HospitalsPage from "./pages/Hospitals";
 import Hero from "./components/Hero";
 import Reports from "./pages/Reports";
 import EmergencyQR from "./pages/EmergencyQR";
+import DoctorAuth from "./pages/DoctorAuth";
+import DoctorEmailVerify from "./pages/DoctorEmailVerify";
 import Request from "./pages/Request";
+
 
 const App = () => {
   return (
@@ -23,7 +26,11 @@ const App = () => {
         <Route path="/hero" element={<Hero />} />
         <Route path="/Reports" element={<Reports />} />
         <Route path="/EmergencyQR" element={<EmergencyQR />} />
+        <Route path="/doctor-auth" element={<DoctorAuth />} />
+        <Route path="/doctor-email-verify" element={<DoctorEmailVerify />} />
         <Route path="/Request" element={<Request />} />
+
+
       </Routes>
     </div>
   );
