@@ -22,18 +22,8 @@ const App = () => {
         <Route path="/email-verify" element={<EmailVerify />} />
         <Route path="/hospital" element={<HospitalsPage />} />
         <Route path="/hero" element={<Hero />} />
-<<<<<<< HEAD
-        <Route path="/Reports" element={<Reports />} />
-        <Route path="/EmergencyQR" element={<EmergencyQR />} />
-        <Route path="/doctor-auth" element={<DoctorAuth />} />
-        <Route path="/doctor-email-verify" element={<DoctorEmailVerify />} />
-
-
-
-=======
         <Route path="/reports" element={<Reports />} />
         <Route path="/emergencyQR" element={<EmergencyQR />} />
->>>>>>> 55732bb (Get individual record by id)
 
       </Routes>
     </div>
