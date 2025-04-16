@@ -1,7 +1,13 @@
-import multichain from "./blockchain";
+// utils/blockchainLogger.js
+import multichain from "./blockchain.js";
 
-const logAccessEvent = (userType, userId, recordId, actionType) => {
-  const data = {
+export const logAccessEvent = async (
+  userType,
+  userId,
+  recordId,
+  actionType
+) => {
+  const payload = {
     time: new Date().toISOString(),
     userType,
     userId,
@@ -11,18 +17,14 @@ const logAccessEvent = (userType, userId, recordId, actionType) => {
 
   const key = `${userType}_${userId}_${recordId}`;
 
-  multichain.publish(
-    {
-      stream: "access_logs",
+  try {
+    await multichain.publish({
+      stream: "record-access",
       key,
-      data: Buffer.from(JSON.stringify(data)).toString("hex"),
-    },
-    (err, res) => {
-      if (err) {
-        console.error("Error publishing to blockchain:", err);
-      }
-        console.log("Access log published to blockchain:", res);
-    }
-  );
+      data: Buffer.from(JSON.stringify(payload)).toString("hex"),
+    });
+    console.log("✅ Access event logged to blockchain");
+  } catch (err) {
+    console.error("❌ Blockchain log failed:", err.message);
+  }
 };
-

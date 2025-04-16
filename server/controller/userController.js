@@ -2,6 +2,7 @@ import accessControlModel from "../models/accessModel.js";
 import recordModel from "../models/recordModel.js";
 import userModel from "../models/userModel.js";
 import { logAccess } from "../utils/auditLogger.js";
+import { logAccessEvent } from "../utils/blockchainLogger.js"; 
 
 export const getUserData = async (req, res) => {
   try {
@@ -114,15 +115,9 @@ export const getUserRecords = async (req, res) => {
       return res.json({ success: false, message: "No records found" });
     }
 
-    // Log access for each record viewed
+    // Log access for each record viewed in the blockchain
     for (const record of records) {
-      await logAccess({
-        actorId: userId,
-        actorRole: "user",
-        action: "view",
-        recordId: record._id,
-        ipAddress: req.ip,
-      });
+      await logAccessEvent("user", userId, record._id.toString(), "view");
     }
 
     res.json({
