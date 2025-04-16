@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import AuditLogModel from "../models/auditLogModel";
+import AuditLogModel from "../models/auditLogModel.js";
 
 const calculateHash = ({
   actorId,

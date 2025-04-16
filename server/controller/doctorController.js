@@ -2,6 +2,7 @@ import doctorModel from "../models/doctorModel.js";
 import accessControlModel from "../models/accessModel.js";
 import userModel from "../models/userModel.js";
 import recordModel from "../models/recordModel.js";
+import { logAccess } from "../utils/auditLogger.js";
 
 export const getDoctorData = async (req, res) => {
   try {
@@ -107,7 +108,6 @@ export const sendRequest = async (req, res) => {
   }
 };
 
-
 export const getAllRecords = async (req, res) => {
   try {
     const doctorId = req.doctor.id; // pulled from JWT
@@ -142,6 +142,15 @@ export const getAllRecords = async (req, res) => {
         const patientRecords = await recordModel.find({
           uploadedBy: access.patient._id,
         });
+        for (const patientRecord of patientRecords) {
+          await logAccess({
+            actorId: doctorId,
+            actorRole: "doctor",
+            action: "view",
+            recordId: patientRecord._id,
+            ipAddress: req.ip,
+          });
+        }
 
         return {
           patient: {

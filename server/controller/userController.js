@@ -66,25 +66,64 @@ export const acceptRequest = async (req, res) => {
   }
 };
 
+// export const getUserRecords = async (req, res) => {
+//   try {
+//     const userId = req.user.id; // pulled from JWT
+//         console.log("Decoded user ID:", userId);
+//     const user = await userModel.findById(userId);
+//     if (!user) {
+//       return res.json({ success: false, message: "User not found" });
+//     }
+
+//     const records = await recordModel.find({ uploadedBy: userId });
+//     if (!records.length) {
+//       return res.json({ success: false, message: "No records found" });
+//     }
+
+//     await logAccess({
+//       actorId: userId,
+//       actorRole: 'user',
+//       action: 'view',
+//       recordId,
+//       ipAddress: req.ip,
+//     })
+
+//     res.json({
+//       success: true,
+//       records: records,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching user records:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
+
 export const getUserRecords = async (req, res) => {
   try {
     const userId = req.user.id; // pulled from JWT
+    console.log("Decoded user ID:", userId);
+
     const user = await userModel.findById(userId);
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
+
     const records = await recordModel.find({ uploadedBy: userId });
     if (!records.length) {
       return res.json({ success: false, message: "No records found" });
     }
 
-    await logAccess({
-      actorId: userId,
-      actorRole: 'user',
-      action: 'view',
-      recordId,
-      ipAddress: req.ip,
-    })
+    // Log access for each record viewed
+    for (const record of records) {
+      await logAccess({
+        actorId: userId,
+        actorRole: "user",
+        action: "view",
+        recordId: record._id,
+        ipAddress: req.ip,
+      });
+    }
 
     res.json({
       success: true,
