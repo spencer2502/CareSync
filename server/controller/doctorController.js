@@ -3,6 +3,7 @@ import accessControlModel from "../models/accessModel.js";
 import userModel from "../models/userModel.js";
 import recordModel from "../models/recordModel.js";
 import { logAccess } from "../utils/auditLogger.js";
+import { logAccessEvent } from "../utils/blockchainLogger.js";
 
 export const getDoctorData = async (req, res) => {
   try {
@@ -108,9 +109,84 @@ export const sendRequest = async (req, res) => {
   }
 };
 
+// export const getAllRecords = async (req, res) => {
+//   try {
+//     const doctorId = req.doctor.id; // pulled from JWT
+
+//     // Validate doctor
+//     const doctor = await doctorModel.findById(doctorId);
+//     if (!doctor) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Doctor not found" });
+//     }
+
+//     // Get all valid access grants
+//     const accessList = await accessControlModel
+//       .find({
+//         doctor: doctorId,
+//         request: true,
+//         expiresAt: { $gt: new Date() }, // not expired
+//       })
+//       .populate("patient", "name email _id");
+
+//     if (accessList.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No valid access requests found",
+//       });
+//     }
+
+//     // Fetch records for each patient
+//     const data = await Promise.all(
+//       accessList.map(async (access) => {
+//         const patientRecords = await recordModel.find({
+//           uploadedBy: access.patient._id,
+//         });
+//         for (const patientRecord of patientRecords) {
+//           await logAccess({
+//             actorId: doctorId,
+//             actorRole: "doctor",
+//             action: "view",
+//             recordId: patientRecord._id,
+//             ipAddress: req.ip,
+//           });
+//         }
+
+//         // Log access for each record viewed in the blockchain
+//         for (const record of patientRecords) {
+//           await logAccessEvent("doctor", doctorId, record._id.toString(), "view");
+//         }
+
+//         res.json({
+//           success: true,
+//           records: patientRecords,
+//         });
+
+//         return {
+//           patient: {
+//             id: access.patient._id,
+//             name: access.patient.name,
+//             email: access.patient.email,
+//           },
+//           records: patientRecords,
+//         };
+//       })
+//     );
+
+//     return res.status(200).json({ success: true, data });
+//   } catch (error) {
+//     console.error("Error fetching records:", error);
+//     res
+//       .status(500)
+//       .json({ success: false, message: "Server error", error: error.message });
+//   }
+// };
+
+
 export const getAllRecords = async (req, res) => {
   try {
-    const doctorId = req.doctor.id; // pulled from JWT
+    const doctorId = req.doctor.id;
 
     // Validate doctor
     const doctor = await doctorModel.findById(doctorId);
@@ -120,12 +196,12 @@ export const getAllRecords = async (req, res) => {
         .json({ success: false, message: "Doctor not found" });
     }
 
-    // Get all valid access grants
+    // Get valid access grants
     const accessList = await accessControlModel
       .find({
         doctor: doctorId,
         request: true,
-        expiresAt: { $gt: new Date() }, // not expired
+        expiresAt: { $gt: new Date() },
       })
       .populate("patient", "name email _id");
 
@@ -136,20 +212,29 @@ export const getAllRecords = async (req, res) => {
       });
     }
 
-    // Fetch records for each patient
+    // Build response data
     const data = await Promise.all(
       accessList.map(async (access) => {
         const patientRecords = await recordModel.find({
           uploadedBy: access.patient._id,
         });
-        for (const patientRecord of patientRecords) {
+
+        // Log access for each record
+        for (const record of patientRecords) {
           await logAccess({
             actorId: doctorId,
             actorRole: "doctor",
             action: "view",
-            recordId: patientRecord._id,
+            recordId: record._id,
             ipAddress: req.ip,
           });
+
+          await logAccessEvent(
+            "doctor",
+            doctorId,
+            record._id.toString(),
+            "view"
+          );
         }
 
         return {
@@ -163,11 +248,16 @@ export const getAllRecords = async (req, res) => {
       })
     );
 
+    // ✅ Send only one response
     return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("Error fetching records:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message,
+      });
+    }
   }
 };
