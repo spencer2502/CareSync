@@ -11,7 +11,7 @@ import Reports from "./pages/Reports";
 import EmergencyQR from "./pages/EmergencyQR";
 import DoctorAuth from "./pages/DoctorAuth";
 import DoctorEmailVerify from "./pages/DoctorEmailVerify";
-import Request from "./pages/Request";
+import Request_ from "./pages/Request_";
 
 
 const App = () => {
@@ -24,11 +24,11 @@ const App = () => {
         <Route path="/email-verify" element={<EmailVerify />} />
         <Route path="/hospital" element={<HospitalsPage />} />
         <Route path="/hero" element={<Hero />} />
-        <Route path="/Reports" element={<Reports />} />
-        <Route path="/EmergencyQR" element={<EmergencyQR />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/emergencyQR" element={<EmergencyQR />} />
         <Route path="/doctor-auth" element={<DoctorAuth />} />
         <Route path="/doctor-email-verify" element={<DoctorEmailVerify />} />
-        <Route path="/Request" element={<Request />} />
+        <Route path="/request" element={<Request_ />} />
 
 
       </Routes>
