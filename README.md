@@ -14,6 +14,9 @@ CareSync is a full-stack application for user authentication, email verification
 - **Medical Record Management**:
   - Create and store medical records with file attachments.
   - Upload files to Cloudinary for secure storage.
+- **Blockchain-based Audit Logging**:
+  - Logs access events (view, update, share) to a blockchain stream for immutability.
+  - Provides a secure and transparent way to track access to medical records.
 
 ### Frontend
 
@@ -383,6 +386,84 @@ CareSync/
       "message": "Error message"
     }
     ```
+
+### Audit Routes (`/api/audit`)
+
+| Method | Endpoint | Description                     | Authentication Required |
+| ------ | -------- | ------------------------------- | ----------------------- |
+| GET    | `/logs`  | Fetch all blockchain audit logs | No                      |
+
+#### `/logs` Endpoint Details
+
+- **Method**: `GET`
+- **URL**: `/api/audit/logs`
+- **Authentication**: Not required
+- **Description**: Fetches all access logs stored in the blockchain stream.
+- **Response**:
+  - **Success**:
+    ```json
+    [
+      {
+        "time": "2023-04-16T23:49:28.908Z",
+        "userType": "doctor",
+        "userId": "string",
+        "recordId": "string",
+        "action": "view"
+      }
+    ]
+    ```
+  - **Error**:
+    ```json
+    {
+      "success": false,
+      "message": "Error message"
+    }
+    ```
+
+## Blockchain Integration
+
+### Overview
+
+CareSync uses a blockchain-based system to log access events for medical records. This ensures that all access logs are immutable and transparent. The blockchain stream is named `record-access`.
+
+### Key Features
+
+- **Stream Initialization**: The `record-access` stream is created and subscribed to during server setup.
+- **Event Logging**: Access events (e.g., view, update, share) are logged with details such as user type, user ID, record ID, and action type.
+- **Audit Viewer**: A Streamlit-based UI is available to view and filter blockchain logs.
+
+### Stream Initialization
+
+The blockchain stream is initialized using the `utils/createStream.js` script. This script creates the `record-access` stream and subscribes to it.
+
+### Logging Access Events
+
+Access events are logged using the `utils/blockchainLogger.js` utility. Each event includes the following details:
+
+- **Time**: The timestamp of the event.
+- **User Type**: The type of user (e.g., doctor, user).
+- **User ID**: The ID of the user performing the action.
+- **Record ID**: The ID of the accessed record.
+- **Action**: The type of action performed (e.g., view, update, share).
+
+### Viewing Logs
+
+Logs can be viewed using the `/api/audit/logs` endpoint or the Streamlit-based UI (`utils/audit_viewer.py`).
+
+#### Streamlit Audit Viewer
+
+The Streamlit-based audit viewer provides a user-friendly interface to view and filter blockchain logs. It includes:
+
+- **Filters**: Filter logs by user type and action type.
+- **Detailed Log Cards**: Expandable cards for each log entry with detailed information.
+
+To run the audit viewer:
+
+1. Navigate to the `utils` directory.
+2. Run the Streamlit app:
+   ```bash
+   streamlit run audit_viewer.py
+   ```
 
 ## License
 
