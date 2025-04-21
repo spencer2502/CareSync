@@ -8,11 +8,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import  axiosInstance from "@/lib/api";
-import { useContext } from "react";
-import { getUserData } from "@/context/AppContext"
+import { useUserContext } from "@/context/userContext";
+
 
 const Register = () => {
   const navigate = useNavigate();
+  const { setUserData , setIsLoggedIn  } = useUserContext();
+
+
   const [role, setRole] = useState("user");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,7 +24,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
@@ -44,8 +47,8 @@ const Register = () => {
       });
       if (data.token){
         toast({title:"Registered"});
-
-        setIsLoading(false);
+        setUserData(data.userData)
+        setIsLoggedIn (true);
 
         navigate("/verify", {
           state:{
@@ -61,24 +64,26 @@ const Register = () => {
       console.log(error)
 
       
-    }finally
+    }finally {
+      setIsLoading(false)
+    }
     
     // Simulate registration API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Registration successful",
-        description: "Please verify your identity to continue",
-      });
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    //   toast({
+    //     title: "Registration successful",
+    //     description: "Please verify your identity to continue",
+    //   });
       
-      // Navigate to OTP verification page
-      navigate("/verify", { 
-        state: { 
-          email, 
-          isNewUser: true 
-        } 
-      });
-    }, 1500);
+    //   // Navigate to OTP verification page
+    //   navigate("/verify", { 
+    //     state: { 
+    //       email, 
+    //       isNewUser: true 
+    //     } 
+    //   });
+    // }, 1500);
   };
 
   return (

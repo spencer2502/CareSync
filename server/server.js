@@ -12,9 +12,8 @@ const app = express();
 const port = process.env.PORT || 4000;
 connectDB();
 
-const allowedOrigins = [
-  'http://localhost:5173', // Add your production URL here
-    'http://localhost:8080/',
+const allowedOrigins = [ // Add your production URL here
+    'http://localhost:8080',
 ];
 
 app.use(express.json());

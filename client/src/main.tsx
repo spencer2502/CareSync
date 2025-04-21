@@ -1,5 +1,14 @@
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import React from 'react';
+import './index.css';
 
-createRoot(document.getElementById("root")!).render(<App />);
+import { UserContextProvider } from './context/userContext.tsx';
+
+createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <UserContextProvider>
+      <App />
+    </UserContextProvider>
+  </React.StrictMode>
+);
