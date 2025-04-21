@@ -1,73 +1,70 @@
-
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "@/components/AuthLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
-import  axiosInstance from "@/lib/api";
-import { useUserContext } from "@/context/userContext";
-
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthLayout from '@/components/AuthLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
+import axiosInstance from '@/lib/api';
+import { useUserContext } from '@/context/userContext';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { setUserData , setIsLoggedIn  } = useUserContext();
+  const { setUserData, setIsLoggedIn } = useUserContext();
 
-
-  const [role, setRole] = useState("user");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState('user');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
-        description: "Please make sure your passwords match",
-        variant: "destructive",
+        description: 'Please make sure your passwords match',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     setIsLoading(true);
 
-    try{
-      const{data} = await axiosInstance.post("/api/auth/user/register",{
+    try {
+      const { data } = await axiosInstance.post('/api/auth/user/register', {
         name,
         email,
         phone,
         password,
       });
-      if (data.token){
-        toast({title:"Registered"});
-        setUserData(data.userData)
-        setIsLoggedIn (true);
+      console.log('Raw response from backend:', data);
+      if (data.token) {
+        toast({ title: 'Registered' });
+        setUserData(data.userData);
+        setIsLoggedIn(true);
+        console.log('User data stored in context:', data.userData);
 
-        navigate("/verify", {
-          state:{
+        navigate('/verify', {
+          state: {
             email,
-            isNewUser:true,
-          }
-        })
-      }else {
-        toast({title:"Registration failed", description:data.message});
+            isNewUser: true,
+          },
+        });
+      } else {
+        toast({ title: 'Registration failed', description: data.message });
       }
-    }catch (error){
-      toast({title:"Something went wrong", description:error.message})
-      console.log(error)
-
-      
-    }finally {
-      setIsLoading(false)
+    } catch (error) {
+      toast({ title: 'Something went wrong', description: error.message });
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
-    
+
     // Simulate registration API call
     // setTimeout(() => {
     //   setIsLoading(false);
@@ -75,13 +72,13 @@ const Register = () => {
     //     title: "Registration successful",
     //     description: "Please verify your identity to continue",
     //   });
-      
+
     //   // Navigate to OTP verification page
-    //   navigate("/verify", { 
-    //     state: { 
-    //       email, 
-    //       isNewUser: true 
-    //     } 
+    //   navigate("/verify", {
+    //     state: {
+    //       email,
+    //       isNewUser: true
+    //     }
     //   });
     // }, 1500);
   };
@@ -91,14 +88,17 @@ const Register = () => {
       title="Create an account"
       subtitle="Join CareSync to manage your health documents"
     >
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6 animate-fade-in-up">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-8 space-y-6 animate-fade-in-up"
+      >
         <div className="space-y-4">
           <div>
             <p className="block text-sm font-medium text-gray-700 mb-2">
               I am a:
             </p>
-            <RadioGroup 
-              defaultValue="user" 
+            <RadioGroup
+              defaultValue="user"
               value={role}
               onValueChange={setRole}
               className="flex space-x-4"
@@ -109,13 +109,18 @@ const Register = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="doctor" id="doctor" disabled />
-                <Label htmlFor="doctor" className="text-gray-400">Doctor (Coming soon)</Label>
+                <Label htmlFor="doctor" className="text-gray-400">
+                  Doctor (Coming soon)
+                </Label>
               </div>
             </RadioGroup>
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
               Full Name
             </label>
             <Input
@@ -129,9 +134,12 @@ const Register = () => {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          
+
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               Email address
             </label>
             <Input
@@ -145,9 +153,12 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          
+
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700"
+            >
               Phone Number
             </label>
             <Input
@@ -160,9 +171,12 @@ const Register = () => {
               onChange={(e) => setPhone(e.target.value)}
             />
           </div>
-          
+
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <Input
@@ -176,9 +190,12 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          
+
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700"
+            >
               Confirm Password
             </label>
             <Input
@@ -195,19 +212,18 @@ const Register = () => {
         </div>
 
         <div>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? "Creating account..." : "Sign up"}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Creating account...' : 'Sign up'}
           </Button>
         </div>
-        
+
         <div className="text-center text-sm">
           <p className="text-gray-600">
-            Already have an account?{" "}
-            <Link to="/login" className="font-medium text-primary hover:text-primary/80">
+            Already have an account?{' '}
+            <Link
+              to="/login"
+              className="font-medium text-primary hover:text-primary/80"
+            >
               Sign in
             </Link>
           </p>
