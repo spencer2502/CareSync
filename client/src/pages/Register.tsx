@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import  axiosInstance from "@/lib/api";
+import { useContext } from "react";
+import { getUserData } from "@/context/AppContext"
 
 const Register = () => {
   const navigate = useNavigate();
@@ -31,6 +34,34 @@ const Register = () => {
     }
     
     setIsLoading(true);
+
+    try{
+      const{data} = await axiosInstance.post("/api/auth/user/register",{
+        name,
+        email,
+        phone,
+        password,
+      });
+      if (data.token){
+        toast({title:"Registered"});
+
+        setIsLoading(false);
+
+        navigate("/verify", {
+          state:{
+            email,
+            isNewUser:true,
+          }
+        })
+      }else {
+        toast({title:"Registration failed", description:data.message});
+      }
+    }catch (error){
+      toast({title:"Something went wrong", description:error.message})
+      console.log(error)
+
+      
+    }finally
     
     // Simulate registration API call
     setTimeout(() => {
