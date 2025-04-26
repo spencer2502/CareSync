@@ -1,8 +1,8 @@
 Welcome To CareSync User Portal
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
 
 **Use your preferred IDE**
 
@@ -44,11 +44,89 @@ npm run dev
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Vite**: Fast build tool for modern web applications.
+- **TypeScript**: Strongly typed JavaScript for better development experience.
+- **React**: Component-based UI library.
+- **shadcn-ui**: Prebuilt UI components for React.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
+
+---
+
+## Frontend Structure
+
+### Folder Structure
+
+```
+client/
+├── src/
+│   ├── components/         # Reusable UI components
+│   ├── context/            # Context for state management
+│   ├── pages/              # Application pages (User and Doctor)
+│   ├── App.tsx             # Main application component
+│   ├── main.tsx            # Entry point for React
+│   ├── index.css           # Global styles
+```
+
+### Flow Overview
+
+1. **Splash Screen**:
+
+   - Entry point for the application.
+   - Provides options for patient and doctor login.
+
+2. **Authentication**:
+
+   - Separate login and registration pages for patients and doctors.
+   - OTP verification for account activation.
+
+3. **Dashboard**:
+
+   - Role-specific dashboards for patients and doctors.
+   - Displays relevant actions and recent activity.
+
+4. **Document Management**:
+
+   - Patients can upload, view, and manage their medical records.
+   - Doctors can request access to patient records and review them.
+
+5. **Help Center**:
+   - Dedicated help pages for patients and doctors with FAQs and resources.
+
+---
+
+## Role-Based Pages
+
+### Patient Pages
+
+| Path                 | Description                       |
+| -------------------- | --------------------------------- |
+| `/`                  | Splash screen with login options  |
+| `/login`             | Patient login page                |
+| `/register`          | Patient registration page         |
+| `/verify`            | OTP verification for patients     |
+| `/dashboard`         | Patient dashboard                 |
+| `/upload`            | Upload new medical records        |
+| `/qr-code`           | Generate emergency QR code        |
+| `/history`           | View document history             |
+| `/document/:id`      | View a specific document          |
+| `/hospitals`         | Find nearby hospitals             |
+| `/help`              | Patient help center               |
+| `/approval-requests` | View and manage approval requests |
+
+### Doctor Pages
+
+| Path                       | Description                       |
+| -------------------------- | --------------------------------- |
+| `/doctor/login`            | Doctor login page                 |
+| `/doctor/verify`           | OTP verification for doctors      |
+| `/doctor/dashboard`        | Doctor dashboard                  |
+| `/doctor/patients`         | View list of assigned patients    |
+| `/doctor/patients/:id`     | View a specific patient's profile |
+| `/doctor/request-document` | Request documents from patients   |
+| `/doctor/document-history` | View document access history      |
+| `/doctor/help`             | Doctor help center                |
+
+---
 
 ## How can I deploy this project?
 
