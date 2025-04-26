@@ -1,10 +1,11 @@
-// client/src/context/AuthContext.tsx
+// Context: AuthContext.tsx
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import axiosInstance from '@/lib/api';
 
 interface User {
   _id: string;
   name: string;
-  role: 'User' | 'Doctor'; // Add Admin later if needed
+  role: 'User' | 'Doctor'; // Modify based on your needs
 }
 
 interface AuthContextType {
@@ -13,6 +14,7 @@ interface AuthContextType {
   loading: boolean;
   setUser: (user: User | null) => void;
   setIsAuthenticated: (auth: boolean) => void;
+  logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>(
@@ -24,23 +26,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const logout = () => {
+    // Remove the token cookie on logout
+    document.cookie = 'token=; Max-Age=0; path=/; secure; HttpOnly';
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('token='));
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      // Set the token in axios headers
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${
+        token.split('=')[1]
+      }`;
+
       try {
-        const res = await fetch('/api/auth/user/me', {
-          credentials: 'include',
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
+        const response = await axiosInstance.get('/api/auth/user/me'); // Adjust if you have this endpoint
+
+        if (response.data && response.data.user) {
+          setUser(response.data.user);
           setIsAuthenticated(true);
         } else {
-          setUser(null);
-          setIsAuthenticated(false);
+          logout();
         }
       } catch (error) {
-        setUser(null);
-        setIsAuthenticated(false);
+        console.error('Error fetching user:', error);
+        logout();
       } finally {
         setLoading(false);
       }
@@ -51,7 +71,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, loading, setUser, setIsAuthenticated }}
+      value={{
+        user,
+        isAuthenticated,
+        loading,
+        setUser,
+        setIsAuthenticated,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

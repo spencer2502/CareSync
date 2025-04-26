@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api';
+import { AuthContext } from '@/context/authContext';
+import { set } from 'date-fns';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,6 +16,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const { setUser, setIsAuthenticated } = useContext(AuthContext);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,14 +29,23 @@ const Login = () => {
         password,
       });
 
-      // Handle successful login
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome back to CareSync!',
-      });
+      if (data.success){
+        const {user} = data;
 
-      // Navigate to dashboard or home page
-      navigate('/dashboard');
+        setUser(user);
+        setIsAuthenticated(true);
+        toast({
+          title: 'Login Successful',
+          description: 'Welcome back to CareSync! ',
+        });
+        navigate('/dashboard');
+      }else {
+        toast({
+          title: 'Login Failed',
+          description: data.message || 'Invalid credentials. Please try again.',
+        });
+      }
+
     } catch (error: any) {
       console.error('Login error:', error);
 

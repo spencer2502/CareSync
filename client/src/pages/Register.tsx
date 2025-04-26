@@ -7,11 +7,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api';
-import { useUserContext } from '@/context/userContext';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { setUserData, setIsLoggedIn } = useUserContext();
+
 
   const [role, setRole] = useState('user');
   const [name, setName] = useState('');
@@ -45,8 +44,7 @@ const Register = () => {
       console.log('Raw response from backend:', data);
       if (data.token) {
         toast({ title: 'Registered' });
-        setUserData(data.userData);
-        setIsLoggedIn(true);
+      
         console.log('User data stored in context:', data.userData);
 
         navigate('/verify', {
