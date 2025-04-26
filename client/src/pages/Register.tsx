@@ -41,7 +41,7 @@ const Register = () => {
         email,
         phone,
         password,
-      });
+      }); 
       console.log('Raw response from backend:', data);
       if (data.token) {
         toast({ title: 'Registered' });
