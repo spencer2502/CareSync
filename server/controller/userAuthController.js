@@ -95,28 +95,26 @@ export const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.json({ success: false, message: 'All fields are required' });
+    return res.status(400).json({ success: false, message: 'All fields are required' });
   }
 
   try {
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.json({ success: false, message: 'Invalid Credentials' });
+      return res.status(400).json({ success: false, message: 'Invalid Credentials' });
     }
 
-    // Check if email is verified
     if (!user.isVerified) {
-      return res.json({
+      return res.status(403).json({
         success: false,
         message: 'Email not verified. Please verify your email first.',
       });
     }
 
-    // Validate password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ success: false, message: 'Invalid Credentials' });
     }
 
     // Generate JWT token
@@ -137,7 +135,7 @@ export const userLogin = async (req, res) => {
     return res.status(200).json({ success: true, message: 'Login successful' });
   } catch (err) {
     console.error('Error during login:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 

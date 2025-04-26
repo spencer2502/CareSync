@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Upload, QrCode, History, Hospital, FileCheck } from 'lucide-react';
@@ -11,15 +11,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import ProtectedRoute from '@/components/protectedRoute';
+import { AuthContext } from '@/context/authContext';
 
 // Demo user data
-const user = {
-  name: 'John Doe',
-  documents: 4,
-  recentDocument: 'Blood Test Results.pdf',
-  lastUpload: '2 days ago',
-  pendingRequests: 2,
-};
+// const user = {
+//   name: 'John Doe',
+//   documents: 4,
+//   recentDocument: 'Blood Test Results.pdf',
+//   lastUpload: '2 days ago',
+//   pendingRequests: 2,
+// };
 
 interface FeatureCardProps {
   title: string;
@@ -54,8 +55,31 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 };
 
 const Dashboard = () => {
+  const { user, loading } = useContext(AuthContext);
+  if (loading) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="flex justify-center items-center h-96">
+          <p>Loading...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="flex justify-center items-center h-96">
+          <p>User not found.Please login Again</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
-    <ProtectedRoute role="User"> // only access ot user role
+    <ProtectedRoute role="User">
+      {' '}
+      //only for user role
       <DashboardLayout title="Dashboard">
         <div className="mb-8">
           <Card>
@@ -66,8 +90,8 @@ const Dashboard = () => {
                     Welcome back, {user.name}
                   </h2>
                   <p className="text-gray-600">
-                    You have {user.documents} documents stored. Your most recent
-                    upload was {user.lastUpload}.
+                    {/* You have {user.documents} documents stored. Your most recent
+                    upload was {user.lastUpload}. */}
                   </p>
                 </div>
                 <div className="mt-4 md:mt-0">
@@ -125,7 +149,7 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <h4 className="font-medium text-amber-800">
-                      You have {user.pendingRequests} pending document requests
+                      {/* You have {user.pendingRequests} pending document requests */}
                     </h4>
                     <p className="text-sm text-amber-700">
                       Doctors are waiting for your approval
@@ -155,9 +179,9 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="font-medium">
-                      Uploaded {user.recentDocument}
+                      {/* Uploaded {user.recentDocument} */}
                     </p>
-                    <p className="text-sm text-gray-500">{user.lastUpload}</p>
+                    {/* <p className="text-sm text-gray-500">{user.lastUpload}</p> */}
                   </div>
                 </div>
 

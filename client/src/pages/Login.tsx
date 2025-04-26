@@ -6,6 +6,7 @@ import AuthLayout from '@/components/AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
+import axiosInstance from '@/lib/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,35 +20,28 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/user/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // crucial for cookies
-        body: JSON.stringify({ email, password }),
+      const { data } = await axiosInstance.post('/api/auth/user/login', {
+        email,
+        password,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        toast({
-          title: 'Login successful',
-          description: 'Welcome back!',
-        });
-
-        navigate('/dashboard'); // redirect user
-      } else {
-        toast({
-          title: 'Login failed',
-          description: data.message || 'Invalid credentials',
-        });
-      }
-    } catch (error) {
-      console.error('Login error:', error);
+      // Handle successful login
       toast({
-        title: 'Something went wrong',
-        description: 'Please try again later',
+        title: 'Login Successful',
+        description: 'Welcome back to CareSync!',
+      });
+
+      // Navigate to dashboard or home page
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Login error:', error);
+
+      // Handle login error
+      toast({
+        title: 'Login Failed',
+        description:
+          error.response?.data?.message ||
+          'Invalid credentials. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -62,8 +56,8 @@ const Login = () => {
       <Alert className="mt-4 mb-2 bg-yellow-50 border-yellow-100">
         <AlertCircle className="h-4 w-4 text-yellow-500" />
         <AlertDescription className="text-yellow-700">
-          <span className="font-medium">Demo Mode:</span> Use any email/password
-          (demo).
+          <span className="font-medium">Demo Mode:</span> You can use any
+          email/password and will receive a demo OTP (123456)
         </AlertDescription>
       </Alert>
 
