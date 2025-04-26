@@ -4,11 +4,12 @@ import React from 'react';
 import './index.css';
 
 import { UserContextProvider } from './context/userContext.tsx';
+import { AuthProvider } from './context/authContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <UserContextProvider>
+    <AuthProvider>
       <App />
-    </UserContextProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
