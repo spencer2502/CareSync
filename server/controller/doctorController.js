@@ -74,10 +74,12 @@ export const getDoctorData = async (req, res) => {
 
 export const sendRequest = async (req, res) => {
   try {
-    const doctorId = req.doctor.id; // Access the doctorId from the req.doctor object
-    const { userId } = req.body; // patientId
+    console.log('--- Incoming request body ---', req.body);
+    const doctorId = req.doctor?.id;
+    const { userId , documentType , urgency , reason } = req.body;
 
     if (!doctorId || !userId || typeof userId !== 'string' || !userId.trim()) {
+      console.log('Missing doctorId or invalid userId');
       return res.status(400).json({
         success: false,
         message: 'Doctor ID and valid User ID are required',
@@ -85,11 +87,15 @@ export const sendRequest = async (req, res) => {
     }
 
     const doctor = await doctorModel.findById(doctorId);
+    console.log('Doctor fetched:', doctor);
+
     if (!doctor) {
       return res.json({ success: false, message: 'Doctor not found' });
     }
 
     const patient = await userModel.findOne({ patientId: userId.trim() });
+    console.log('Patient fetched:', patient);
+
     if (!patient) {
       return res.json({ success: false, message: 'Patient not found' });
     }
@@ -97,17 +103,24 @@ export const sendRequest = async (req, res) => {
     const newRequest = new accessControlModel({
       doctor: doctor._id,
       patient: patient._id,
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes from now
+      documentType: documentType || 'General',
+      urgency: urgency || 'Normal',
+      reason: reason || '',
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
     });
 
     await newRequest.save();
+    console.log('New request saved successfully');
+
     return res.json({ success: true, message: 'Request sent successfully' });
   } catch (error) {
+    console.error('Server error occurred:', error);
     return res
       .status(500)
       .json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
 
 // export const getAllRecords = async (req, res) => {
 //   try {

@@ -11,6 +11,20 @@ const accessControlSchema = new mongoose.Schema({
     ref: "user",
     required: true,
   },
+  documentType:{
+    type: String,
+    enum: ["Prescription", "Diagnosis", "LabReport", "Imaging", "General"],
+    default: "General",
+  },
+  urgency:{
+    type: String,
+    enum: ["High", "Normal", "Low"],
+    default: "Normal",
+  },
+  reason:{
+    type: String,
+    required: true,
+  },
   expiresAt: {
     type: Date,
     required: true,
