@@ -1,21 +1,22 @@
-
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "@/components/AuthLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { Lock, Mail, Info, Eye, EyeOff } from "lucide-react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthLayout from '@/components/AuthLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
+import { useForm } from 'react-hook-form';
+import { Lock, Mail, Info, Eye, EyeOff } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import axios from 'axios';
+import { AppContext } from '@/context/appContext';
 
 interface FormData {
   email: string;
@@ -27,44 +28,55 @@ const DoctorLogin = () => {
   const [showAccountInfo, setShowAccountInfo] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+
+  const { backendUrl, setIsLoggedIn, getDoctorData } = useContext(AppContext);
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Demo credentials check
-      if (data.email === "doctor@example.com" && data.password === "password") {
+    try {
+      axios.defaults.withCredentials = true;
+      const response = await axios.post(backendUrl + '/api/auth/doctor/login', {
+        email: data.email,
+        password: data.password,
+      });
+
+      if (response.data.success) {
+        setIsLoggedIn(true);
         toast({
-          title: "Authentication successful",
-          description: "Please complete verification to continue",
+          title: 'Login Successful',
+          description: 'Welcome back to CareSync!',
         });
-        
-        // Navigate to OTP verification page
-        navigate("/doctor/verify", { 
-          state: { 
-            email: data.email, 
-            isNewUser: false 
-          } 
-        });
+        await getDoctorData();
+        navigate('/doctor/dashboard');
       } else {
         toast({
-          title: "Login failed",
-          description: "Invalid credentials. Try doctor@example.com / password",
-          variant: "destructive",
+          title: 'Login Failed',
+          description:
+            response.data.message || 'Invalid credentials. Please try again.',
+          variant: 'destructive',
         });
       }
-    }, 1500);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: 'Login Failed',
+        description:
+          error.response?.data?.message ||
+          'Invalid credentials. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <AuthLayout 
-      title="Doctor Login" 
-      subtitle="Access your doctor portal"
-    >
+    <AuthLayout title="Doctor Login" subtitle="Access your doctor portal">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-8">
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
@@ -75,12 +87,12 @@ const DoctorLogin = () => {
               type="email"
               placeholder="doctor@example.com"
               className="pl-10"
-              {...register("email", { 
-                required: "Email is required", 
+              {...register('email', {
+                required: 'Email is required',
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address"
-                }
+                  message: 'Invalid email address',
+                },
               })}
             />
           </div>
@@ -88,11 +100,14 @@ const DoctorLogin = () => {
             <p className="text-sm text-red-500">{errors.email.message}</p>
           )}
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex justify-between">
             <Label htmlFor="password">Password</Label>
-            <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-primary hover:underline"
+            >
               Forgot password?
             </Link>
           </div>
@@ -100,50 +115,54 @@ const DoctorLogin = () => {
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
             <Input
               id="password"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               className="pl-10 pr-10"
-              {...register("password", { 
-                required: "Password is required",
+              {...register('password', {
+                required: 'Password is required',
                 minLength: {
                   value: 6,
-                  message: "Password must be at least 6 characters"
-                }
+                  message: 'Password must be at least 6 characters',
+                },
               })}
             />
             <button
               type="button"
               tabIndex={-1}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
             </button>
           </div>
           {errors.password && (
             <p className="text-sm text-red-500">{errors.password.message}</p>
           )}
         </div>
-        
+
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Logging in..." : "Login to Doctor Portal"}
+          {isLoading ? 'Logging in...' : 'Login to Doctor Portal'}
         </Button>
       </form>
-      
+
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          Don't have a doctor account?{" "}
-          <Button 
-            variant="link" 
-            className="p-0 h-auto font-medium" 
+          Don't have a doctor account?{' '}
+          <Button
+            variant="link"
+            className="p-0 h-auto font-medium"
             onClick={() => setShowAccountInfo(!showAccountInfo)}
           >
             How to get one
           </Button>
         </p>
       </div>
-      
+
       {showAccountInfo && (
         <Card className="mt-4 border-primary/20">
           <CardHeader className="pb-2">
@@ -154,7 +173,8 @@ const DoctorLogin = () => {
           </CardHeader>
           <CardContent className="text-sm pt-0">
             <p className="mb-2">
-              Doctor accounts must be verified by hospital administrators. To request an account:
+              Doctor accounts must be verified by hospital administrators. To
+              request an account:
             </p>
             <ol className="list-decimal pl-5 space-y-1">
               <li>Contact your hospital IT department</li>
@@ -171,10 +191,11 @@ const DoctorLogin = () => {
           </CardFooter>
         </Card>
       )}
-      
+
       <div className="mt-8 border-t pt-6">
         <p className="text-xs text-center text-gray-500">
-          By logging in, you agree to CareSync's Terms of Service and Privacy Policy.
+          By logging in, you agree to CareSync's Terms of Service and Privacy
+          Policy.
         </p>
       </div>
     </AuthLayout>
@@ -182,4 +203,3 @@ const DoctorLogin = () => {
 };
 
 export default DoctorLogin;
-

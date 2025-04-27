@@ -1,16 +1,16 @@
-import doctorModel from "../models/doctorModel.js";
-import accessControlModel from "../models/accessModel.js";
-import userModel from "../models/userModel.js";
-import recordModel from "../models/recordModel.js";
-import { logAccess } from "../utils/auditLogger.js";
-import { logAccessEvent } from "../utils/blockchainLogger.js";
+import doctorModel from '../models/doctorModel.js';
+import accessControlModel from '../models/accessModel.js';
+import userModel from '../models/userModel.js';
+import recordModel from '../models/recordModel.js';
+import { logAccess } from '../utils/auditLogger.js';
+import { logAccessEvent } from '../utils/blockchainLogger.js';
 
 export const getDoctorData = async (req, res) => {
   try {
-    const { doctorId } = req.body;
+    const doctorId = req.doctor?.id;
     const doctor = await doctorModel.findById(doctorId);
     if (!doctor) {
-      return res.json({ success: false, message: "Doctor not found" });
+      return res.json({ success: false, message: 'Doctor not found' });
     }
     return res.json({
       success: true,
@@ -32,7 +32,7 @@ export const getDoctorData = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+      .json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
@@ -77,21 +77,21 @@ export const sendRequest = async (req, res) => {
     const doctorId = req.doctor.id; // Access the doctorId from the req.doctor object
     const { userId } = req.body; // patientId
 
-    if (!doctorId || !userId || typeof userId !== "string" || !userId.trim()) {
+    if (!doctorId || !userId || typeof userId !== 'string' || !userId.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Doctor ID and valid User ID are required",
+        message: 'Doctor ID and valid User ID are required',
       });
     }
 
     const doctor = await doctorModel.findById(doctorId);
     if (!doctor) {
-      return res.json({ success: false, message: "Doctor not found" });
+      return res.json({ success: false, message: 'Doctor not found' });
     }
 
     const patient = await userModel.findOne({ patientId: userId.trim() });
     if (!patient) {
-      return res.json({ success: false, message: "Patient not found" });
+      return res.json({ success: false, message: 'Patient not found' });
     }
 
     const newRequest = new accessControlModel({
@@ -101,11 +101,11 @@ export const sendRequest = async (req, res) => {
     });
 
     await newRequest.save();
-    return res.json({ success: true, message: "Request sent successfully" });
+    return res.json({ success: true, message: 'Request sent successfully' });
   } catch (error) {
     return res
       .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+      .json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
@@ -183,7 +183,6 @@ export const sendRequest = async (req, res) => {
 //   }
 // };
 
-
 export const getAllRecords = async (req, res) => {
   try {
     const doctorId = req.doctor.id;
@@ -193,7 +192,7 @@ export const getAllRecords = async (req, res) => {
     if (!doctor) {
       return res
         .status(404)
-        .json({ success: false, message: "Doctor not found" });
+        .json({ success: false, message: 'Doctor not found' });
     }
 
     // Get valid access grants
@@ -203,12 +202,12 @@ export const getAllRecords = async (req, res) => {
         request: true,
         expiresAt: { $gt: new Date() },
       })
-      .populate("patient", "name email _id");
+      .populate('patient', 'name email _id');
 
     if (accessList.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No valid access requests found",
+        message: 'No valid access requests found',
       });
     }
 
@@ -223,17 +222,17 @@ export const getAllRecords = async (req, res) => {
         for (const record of patientRecords) {
           await logAccess({
             actorId: doctorId,
-            actorRole: "doctor",
-            action: "view",
+            actorRole: 'doctor',
+            action: 'view',
             recordId: record._id,
             ipAddress: req.ip,
           });
 
           await logAccessEvent(
-            "doctor",
+            'doctor',
             doctorId,
             record._id.toString(),
-            "view"
+            'view'
           );
         }
 
@@ -251,11 +250,11 @@ export const getAllRecords = async (req, res) => {
     // ✅ Send only one response
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    console.error("Error fetching records:", error);
+    console.error('Error fetching records:', error);
     if (!res.headersSent) {
       return res.status(500).json({
         success: false,
-        message: "Server error",
+        message: 'Server error',
         error: error.message,
       });
     }

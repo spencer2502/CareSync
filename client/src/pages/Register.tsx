@@ -14,7 +14,6 @@ import { get } from 'http';
 const Register = () => {
   const navigate = useNavigate();
 
-
   const [role, setRole] = useState('user');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -23,7 +22,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const {backendUrl, setIsLoggedIn , getUserData} =useContext(AppContext)
+  const { backendUrl, setIsLoggedIn, getUserData } = useContext(AppContext);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,31 +37,34 @@ const Register = () => {
     }
 
     setIsLoading(true);
-    try{
+    try {
       axios.defaults.withCredentials = true;
-      const {data} = await axios.post(backendUrl + '/api/auth/user/register', {
-        name,
-        email,
-        phone,
-        password,
-      });
+      const { data } = await axios.post(
+        backendUrl + '/api/auth/user/register',
+        {
+          name,
+          email,
+          phone,
+          password,
+        }
+      );
       setIsLoading(false);
       toast({
-        title: "Registration successful",
-        description: "Please verify your identity to continue",
+        title: 'Registration successful',
+        description: 'Please verify your identity to continue',
       });
-      getUserData()
-      navigate("/dashboard", {
+      getUserData();
+      navigate('/dashboard', {
         state: {
           email,
-          isNewUser: true
-        }
+          isNewUser: true,
+        },
       });
     } catch (error) {
       setIsLoading(false);
       toast({
-        title: "Registration failed",
-        description: error.response?.data?.message ,
+        title: 'Registration failed',
+        description: error.response?.data?.message,
         variant: 'destructive',
       });
     }

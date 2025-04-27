@@ -1,18 +1,24 @@
-
-import React from "react";
-import { Link } from "react-router-dom";
-import DoctorLayout from "@/components/DoctorLayout";
-import { Users, FilePlus, HelpCircle, History, Hospital } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
+import DoctorLayout from '@/components/DoctorLayout';
+import { Users, FilePlus, HelpCircle, History, Hospital } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { AppContext } from '@/context/appContext';
 
 // Demo doctor data
 const doctor = {
-  name: "Dr. Sarah Johnson",
+  name: 'Dr. Sarah Johnson',
   patients: 12,
   pendingReviews: 4,
-  recentPatient: "John Doe",
-  lastReview: "2 days ago",
+  recentPatient: 'John Doe',
+  lastReview: '2 days ago',
 };
 
 interface FeatureCardProps {
@@ -34,7 +40,9 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
     <Link to={to} className="block">
       <Card className="caresync-3d-card h-full">
         <CardHeader>
-          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${color} mb-4`}>
+          <div
+            className={`w-12 h-12 rounded-lg flex items-center justify-center ${color} mb-4`}
+          >
             {icon}
           </div>
           <CardTitle>{title}</CardTitle>
@@ -46,6 +54,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 };
 
 const DoctorDashboard = () => {
+  const { doctorData } = useContext(AppContext);
   return (
     <DoctorLayout title="Doctor Dashboard">
       <div className="mb-8">
@@ -53,9 +62,12 @@ const DoctorDashboard = () => {
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Welcome back, {doctor.name}</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  Welcome back, {doctorData ? doctorData.name : 'Doctor'}
+                </h2>
                 <p className="text-gray-600">
-                  You have {doctor.patients} patients and {doctor.pendingReviews} pending document reviews.
+                  You have {doctor.patients} patients and{' '}
+                  {doctor.pendingReviews} pending document reviews.
                 </p>
               </div>
               <div className="mt-4 md:mt-0 flex gap-3">
@@ -116,11 +128,13 @@ const DoctorDashboard = () => {
                   <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Reviewed documents for {doctor.recentPatient}</p>
+                  <p className="font-medium">
+                    Reviewed documents for {doctor.recentPatient}
+                  </p>
                   <p className="text-sm text-gray-500">{doctor.lastReview}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-4 p-3 rounded-lg bg-gray-50 border border-gray-100">
                 <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
                   <Hospital className="h-5 w-5 text-secondary" />

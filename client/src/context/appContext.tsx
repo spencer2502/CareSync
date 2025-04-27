@@ -9,6 +9,9 @@ export const AppContext = createContext({
   userData: null,
   setUserData: (value) => {},
   getUserData: () => {},
+  doctorData: null,
+  setDoctorData: (value) => {},
+  getDoctorData: () => {},
 });
 
 
@@ -28,13 +31,28 @@ export const AppContextProvider = (props) => {
     }
   }
 
+  const [doctorData, setDoctorData] = useState(null);
+  const getDoctorData = async () => {
+    try {
+      const {data} = await axios.get(backendUrl + '/api/doctor/data')
+      data.success ? setDoctorData(data.doctorData) : toast.error(data.message)
+    }catch (error) {
+      console.error('Error fetching doctor data:', error);
+      toast.error(error.message);
+
+    }
+  }
+
   const value = {
     backendUrl,
     isLoggedIn,
     setIsLoggedIn,
     userData,
     setUserData,
-    getUserData
+    getUserData,
+    doctorData,
+    setDoctorData,
+    getDoctorData,
   };
 
   return (
