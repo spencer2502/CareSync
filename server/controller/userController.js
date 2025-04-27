@@ -6,7 +6,7 @@ import { logAccessEvent } from "../utils/blockchainLogger.js";
 
 export const getUserData = async (req, res) => {
   try {
-    const userId = req.user.id; // from the JWT token
+    const userId = req.user?.id; // from the JWT token
     console.log("Decoded user ID:", userId);
 
     const user = await userModel.findById(userId);
@@ -100,32 +100,32 @@ export const acceptRequest = async (req, res) => {
 // };
 
 
-export const getUserRecords = async (req, res) => {
-  try {
-    const userId = req.user.id; // pulled from JWT
-    console.log("Decoded user ID:", userId);
+  export const getUserRecords = async (req, res) => {
+    try {
+      const userId = req.user?.id; // pulled from JWT
+      console.log("Decoded user ID:", userId);
 
-    const user = await userModel.findById(userId);
-    if (!user) {
-      return res.json({ success: false, message: "User not found" });
+      const user = await userModel.findById(userId);
+      if (!user) {
+        return res.json({ success: false, message: "User not found" });
+      }
+
+      const records = await recordModel.find({ uploadedBy: userId });
+      if (!records.length) {
+        return res.json({ success: false, message: "No records found" });
+      }
+
+      // Log access for each record viewed in the blockchain
+      for (const record of records) {
+        await logAccessEvent("user", userId, record._id.toString(), "view");
+      }
+
+      res.json({
+        success: true,
+        records: records,
+      });
+    } catch (error) {
+      console.error("Error fetching user records:", error);
+      res.status(500).json({ success: false, message: "Server error" });
     }
-
-    const records = await recordModel.find({ uploadedBy: userId });
-    if (!records.length) {
-      return res.json({ success: false, message: "No records found" });
-    }
-
-    // Log access for each record viewed in the blockchain
-    for (const record of records) {
-      await logAccessEvent("user", userId, record._id.toString(), "view");
-    }
-
-    res.json({
-      success: true,
-      records: records,
-    });
-  } catch (error) {
-    console.error("Error fetching user records:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-};
+  };
