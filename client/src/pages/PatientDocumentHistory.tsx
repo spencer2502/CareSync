@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -82,6 +83,7 @@ const MedicalRecordsViewer: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const { backendUrl } = useContext(AppContext);
   const [showDialog, setShowDialog] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRecords();
@@ -93,7 +95,6 @@ const MedicalRecordsViewer: React.FC = () => {
 
       // Ensure backendUrl has a trailing slash if needed
       const baseUrl = backendUrl.endsWith('/') ? backendUrl : `${backendUrl}/`;
-      console.log('Fetching from URL:', `${baseUrl}api/user/getUserRecords`);
 
       const { data } = await axios.get<ApiResponse>(
         `${baseUrl}api/user/getUserRecords`
@@ -138,6 +139,7 @@ const MedicalRecordsViewer: React.FC = () => {
   const handleViewRecord = (record: Record) => {
     setSelectedRecord(record);  
     setShowDialog(true);
+    // navigate(`/patient-document/${record._id}`); // Navigate to the document view page
   };
 
   const filteredRecords = records.filter((record) => {
