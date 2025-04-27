@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '@/components/AuthLayout';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api';
+import axios from 'axios';
+import { AppContext } from '@/context/appContext';
+import { get } from 'http';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -19,6 +22,8 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const {backendUrl, setIsLoggedIn , getUserData} =useContext(AppContext)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,34 +38,33 @@ const Register = () => {
     }
 
     setIsLoading(true);
-
-    try {
-      const { data } = await axiosInstance.post('/api/auth/user/register', {
+    try{
+      axios.defaults.withCredentials = true;
+      const {data} = await axios.post(backendUrl + '/api/auth/user/register', {
         name,
         email,
         phone,
         password,
-      }); 
-      console.log('Raw response from backend:', data);
-      if (data.token) {
-        toast({ title: 'Registered' });
-      
-        console.log('User data stored in context:', data.userData);
-
-        navigate('/verify', {
-          state: {
-            email,
-            isNewUser: true,
-          },
-        });
-      } else {
-        toast({ title: 'Registration failed', description: data.message });
-      }
-    } catch (error) {
-      toast({ title: 'Something went wrong', description: error.message });
-      console.log(error);
-    } finally {
+      });
       setIsLoading(false);
+      toast({
+        title: "Registration successful",
+        description: "Please verify your identity to continue",
+      });
+      getUserData()
+      navigate("/dashboard", {
+        state: {
+          email,
+          isNewUser: true
+        }
+      });
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        title: "Registration failed",
+        description: error.response?.data?.message ,
+        variant: 'destructive',
+      });
     }
 
     // Simulate registration API call

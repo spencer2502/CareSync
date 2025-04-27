@@ -19,51 +19,10 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // const { setUser, setIsAuthenticated } = useContext(AuthContext);
+
 
   const { backendUrl, setIsLoggedIn, getUserData } = useContext(AppContext);
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-
-  //   try {
-  //     const { data } = await axiosInstance.post('/api/auth/user/login', {
-  //       email,
-  //       password,
-  //     });
-
-  //     if (data.success){
-  //       const {user} = data;
-
-  //       setUser(user);
-  //       setIsAuthenticated(true);
-  //       toast({
-  //         title: 'Login Successful',
-  //         description: 'Welcome back to CareSync! ',
-  //       });
-  //       navigate('/dashboard');
-  //     }else {
-  //       toast({
-  //         title: 'Login Failed',
-  //         description: data.message || 'Invalid credentials. Please try again.',
-  //       });
-  //     }
-
-  //   } catch (error: any) {
-  //     console.error('Login error:', error);
-
-  //     // Handle login error
-  //     toast({
-  //       title: 'Login Failed',
-  //       description:
-  //         error.response?.data?.message ||
-  //         'Invalid credentials. Please try again.',
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
