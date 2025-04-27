@@ -1,27 +1,30 @@
-import React, { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Upload, X, File, Check } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
+import React, { useContext, useState } from 'react';
+import DashboardLayout from '@/components/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Upload, X, File, Check } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
+import { AppContext } from '@/context/appContext';
+import axios from 'axios';
 
 const UploadDocument = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [documentName, setDocumentName] = useState("");
-  const [description, setDescription] = useState("");
-  const [tags, setTags] = useState("");
+  const [documentName, setDocumentName] = useState('');
+  const [description, setDescription] = useState('');
+  const [tags, setTags] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [documentType, setDocumentType] = useState("General");
+  const [documentType, setDocumentType] = useState('General');
+  const { backendUrl, userData } = useContext(AppContext);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -40,21 +43,21 @@ const UploadDocument = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile.type === "application/pdf") {
+      if (droppedFile.type === 'application/pdf') {
         setFile(droppedFile);
-        
+
         // Auto-fill document name from filename
         if (!documentName) {
-          setDocumentName(droppedFile.name.replace(".pdf", ""));
+          setDocumentName(droppedFile.name.replace('.pdf', ''));
         }
       } else {
         toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF document",
-          variant: "destructive",
+          title: 'Invalid file type',
+          description: 'Please upload a PDF document',
+          variant: 'destructive',
         });
       }
     }
@@ -63,18 +66,18 @@ const UploadDocument = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
-      if (selectedFile.type === "application/pdf") {
+      if (selectedFile.type === 'application/pdf') {
         setFile(selectedFile);
-        
+
         // Auto-fill document name from filename
         if (!documentName) {
-          setDocumentName(selectedFile.name.replace(".pdf", ""));
+          setDocumentName(selectedFile.name.replace('.pdf', ''));
         }
       } else {
         toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF document",
-          variant: "destructive",
+          title: 'Invalid file type',
+          description: 'Please upload a PDF document',
+          variant: 'destructive',
         });
       }
     }
@@ -84,37 +87,99 @@ const UploadDocument = () => {
     setFile(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (!file) {
+  //     toast({
+  //       title: "No file selected",
+  //       description: "Please select a PDF file to upload",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+
+  //   setIsUploading(true);
+
+  //   // Simulate upload API call
+  //   setTimeout(() => {
+  //     setIsUploading(false);
+  //     toast({
+  //       title: "Document uploaded successfully",
+  //       description: `${documentName} has been uploaded to your account`,
+  //     });
+
+  //     // Reset form
+  //     setFile(null);
+  //     setDocumentName("");
+  //     setDescription("");
+  //     setTags("");
+  //     setDocumentType("General");
+  //   }, 2000);
+  // };
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!file) {
       toast({
-        title: "No file selected",
-        description: "Please select a PDF file to upload",
-        variant: "destructive",
+        title: 'No file selected',
+        description: 'Please select a PDF file to upload',
+        variant: 'destructive',
       });
       return;
     }
-    
-    setIsUploading(true);
-    
-    // Simulate upload API call
-    setTimeout(() => {
-      setIsUploading(false);
-      toast({
-        title: "Document uploaded successfully",
-        description: `${documentName} has been uploaded to your account`,
-      });
-      
-      // Reset form
-      setFile(null);
-      setDocumentName("");
-      setDescription("");
-      setTags("");
-      setDocumentType("General");
-    }, 2000);
-  };
 
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('files', file); // 'files' matches your multer upload.array("files", 5)
+      formData.append('doctorId','3FP1LBJV'); // You might need to select this from UI late
+      formData.append('recordType', documentType); // Prescription / Diagnosis / LabReport etc.
+      formData.append('title', documentName);
+      formData.append('description', description);
+      formData.append('isEmergencyAccessible', 'false'); // Or true if you allow setting it
+      formData.append('sharedWith', ''); // Optional: if you have a way to add collaborators
+
+      axios.defaults.withCredentials = true;
+
+      const { data } = await axios.post(
+        backendUrl + '/api/user/createNewRecord',
+        formData
+      );
+      if (data.success) {
+        setIsUploading(false);
+        toast({
+          title: 'Document uploaded successfully',
+          description: `${documentName} has been uploaded to your account`,
+          variant: 'default',
+        });
+        // Reset form
+        setFile(null);
+        setDocumentName('');
+        setDescription('');
+        setTags('');
+        setDocumentType('General');
+      } else {
+        setIsUploading(false);
+        toast({
+          title: 'Upload failed',
+          description:
+            data.message ,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: 'Upload failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
   return (
     <DashboardLayout title="Upload Document">
       <div className="max-w-3xl mx-auto">
@@ -124,10 +189,10 @@ const UploadDocument = () => {
               <div
                 className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors ${
                   isDragging
-                    ? "border-primary bg-primary/5"
+                    ? 'border-primary bg-primary/5'
                     : file
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-300 hover:border-primary hover:bg-gray-50"
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-300 hover:border-primary hover:bg-gray-50'
                 }`}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -180,7 +245,9 @@ const UploadDocument = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => document.getElementById("file-upload")?.click()}
+                        onClick={() =>
+                          document.getElementById('file-upload')?.click()
+                        }
                       >
                         Browse Files
                       </Button>
@@ -188,10 +255,13 @@ const UploadDocument = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="document-name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="document-name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Document Name
                   </label>
                   <Input
@@ -202,15 +272,15 @@ const UploadDocument = () => {
                     required
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="document-type" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="document-type"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Document Type
                   </label>
-                  <Select
-                    value={documentType}
-                    onValueChange={setDocumentType}
-                  >
+                  <Select value={documentType} onValueChange={setDocumentType}>
                     <SelectTrigger id="document-type" className="w-full">
                       <SelectValue placeholder="Select document type" />
                     </SelectTrigger>
@@ -223,9 +293,12 @@ const UploadDocument = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Description (Optional)
                   </label>
                   <Textarea
@@ -236,9 +309,12 @@ const UploadDocument = () => {
                     rows={3}
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="tags"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Tags (Optional)
                   </label>
                   <Input
@@ -252,9 +328,13 @@ const UploadDocument = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="pt-4">
-                <Button type="submit" disabled={!file || isUploading} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={!file || isUploading}
+                  className="w-full"
+                >
                   {isUploading ? (
                     <>Uploading...</>
                   ) : (
