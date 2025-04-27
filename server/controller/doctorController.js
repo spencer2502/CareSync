@@ -76,7 +76,7 @@ export const sendRequest = async (req, res) => {
   try {
     console.log('--- Incoming request body ---', req.body);
     const doctorId = req.doctor?.id;
-    const { userId , documentType , urgency , reason } = req.body;
+    const { userId, documentType, urgency, reason } = req.body;
 
     if (!doctorId || !userId || typeof userId !== 'string' || !userId.trim()) {
       console.log('Missing doctorId or invalid userId');
@@ -120,7 +120,6 @@ export const sendRequest = async (req, res) => {
       .json({ success: false, message: 'Server error', error: error.message });
   }
 };
-
 
 // export const getAllRecords = async (req, res) => {
 //   try {
@@ -271,5 +270,82 @@ export const getAllRecords = async (req, res) => {
         error: error.message,
       });
     }
+  }
+};
+
+export const getPatientById = async (req, res) => {
+  try {
+    const patientId = req.params.id; // patientId from URL
+    if (!patientId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Patient ID is required',
+      });
+    }
+    const patient = await userModel.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: 'Patient not found',
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: patient,
+    });
+  } catch (error) {
+    console.error('Error fetching patient:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  }
+};
+
+// Controller function to get all documents for a specific patient
+export const getPatientDocuments = async (req, res) => {
+  try {
+    const doctorId = req.user?.id; // Doctor ID from JWT
+    const patientId = req.params.id; // Patient ID from URL parameter
+    
+    if (!patientId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Patient ID is required'
+      });
+    }
+
+    // Verify the patient exists
+    const patient = await userModel.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: 'Patient not found'
+      });
+    }
+
+    // Get all records uploaded by this patient
+    const records = await recordModel.find({ uploadedBy: patientId });
+    
+    // Log access for audit purposes
+    for (const record of records) {
+      await logAccessEvent("doctor", doctorId, record._id.toString(), "list_view");
+    }
+
+    return res.status(200).json({
+      success: true,
+      documents: records,
+      message: `Retrieved ${records.length} documents for patient`
+    });
+  } catch (error) {
+    console.error('Error fetching patient documents:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
