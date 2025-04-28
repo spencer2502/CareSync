@@ -17,10 +17,20 @@ import {
   History,
   Loader2,
   AlertTriangle,
+  ExternalLink,
+  Tag,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import axios from 'axios';
 import { AppContext } from '../context/appContext'; // Adjust path as needed
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 // Set axios to always send credentials (cookies)
 axios.defaults.withCredentials = true;
@@ -46,6 +56,17 @@ const formatRemainingTime = (expiresAt) => {
   return `${diffMins}m ${diffSecs}s remaining`;
 };
 
+// Format date helper function
+const formatDate = (dateString) => {
+  if (!dateString) return '—';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+};
+
 const PatientView = () => {
   const { id } = useParams();
   const [patient, setPatient] = useState(null);
@@ -57,6 +78,10 @@ const PatientView = () => {
 
   // For updating the time remaining display
   const [refreshCounter, setRefreshCounter] = useState(0);
+
+  // New state for dialog functionality
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -127,8 +152,9 @@ const PatientView = () => {
           : `${backendUrl}/`;
         await axios.post(`${baseUrl}api/doctor/documents/${doc.id}/view`);
 
-        // In a real app, navigate to document view page or open a modal
-        window.open(doc.fileUrl, '_blank');
+        // Set the selected document and show dialog instead of opening in new tab
+        setSelectedDocument(doc);
+        setShowDialog(true);
 
         toast({
           title: 'Document Accessed',
@@ -149,6 +175,23 @@ const PatientView = () => {
         description: "This document's viewing period has expired.",
         variant: 'destructive',
       });
+    }
+  };
+
+  // Function to open document in new tab from the dialog
+  const openDocumentInNewTab = (fileUrl) => {
+    window.open(fileUrl, '_blank');
+  };
+
+  // Helper function to determine record type color
+  const getRecordTypeColor = (type) => {
+    switch (type) {
+      case 'Diagnosis':
+        return 'bg-blue-100 text-blue-800';
+      case 'General':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -412,10 +455,15 @@ const PatientView = () => {
                             </p>
                           </div>
                         </div>
-                        <Button size="sm" variant="ghost" asChild>
-                          <Link to={`/doctor/reviews/${doc.id || doc._id}`}>
-                            View
-                          </Link>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedDocument(doc);
+                            setShowDialog(true);
+                          }}
+                        >
+                          View
                         </Button>
                       </div>
                     ))
@@ -468,6 +516,142 @@ const PatientView = () => {
           </Tabs>
         </Card>
       </div>
+
+      {/* Document Viewing Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              {selectedDocument?.fileName ||
+                selectedDocument?.title ||
+                'Document Details'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Badge
+                variant="outline"
+                className={
+                  selectedDocument
+                    ? getRecordTypeColor(
+                        selectedDocument.recordType ||
+                          selectedDocument.type ||
+                          'General'
+                      )
+                    : ''
+                }
+              >
+                <Tag className="h-3 w-3 mr-1" />
+                {selectedDocument?.recordType ||
+                  selectedDocument?.type ||
+                  'General'}
+              </Badge>
+              <span className="text-sm text-gray-500">
+                Created on{' '}
+                {selectedDocument ? formatDate(selectedDocument.createdAt) : ''}
+              </span>
+              {selectedDocument?.isEmergencyAccessible && (
+                <Badge variant="outline" className="bg-red-100 text-red-800">
+                  Emergency Accessible
+                </Badge>
+              )}
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-medium mb-2">Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {selectedDocument?.patientId && (
+                  <div>
+                    <p className="text-sm text-gray-500">Patient ID</p>
+                    <p>{selectedDocument.patientId}</p>
+                  </div>
+                )}
+                {selectedDocument?.doctorId && (
+                  <div>
+                    <p className="text-sm text-gray-500">Doctor ID</p>
+                    <p>{selectedDocument.doctorId}</p>
+                  </div>
+                )}
+                {selectedDocument?.description && (
+                  <div className="sm:col-span-2">
+                    <p className="text-sm text-gray-500">Description</p>
+                    <p>{selectedDocument.description}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* If document has a direct fileUrl */}
+            {selectedDocument?.fileUrl && (
+              <div>
+                <h3 className="font-medium mb-2">Document</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      openDocumentInNewTab(selectedDocument.fileUrl)
+                    }
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <FileText className="h-5 w-5" />
+                    <span>View Document in New Tab</span>
+                    <ExternalLink className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* If document has attachments */}
+            {selectedDocument?.attachments &&
+              selectedDocument.attachments.length > 0 && (
+                <div>
+                  <h3 className="font-medium mb-2">Attachments</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {selectedDocument.attachments.map((attachment) => (
+                      <a
+                        key={attachment._id || `attachment-${Math.random()}`}
+                        href={attachment.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      >
+                        <div className="flex-shrink-0 mr-3">
+                          {attachment.fileName &&
+                          attachment.fileName.endsWith('.pdf') ? (
+                            <FileText className="h-5 w-5 text-red-500" />
+                          ) : (
+                            <FileText className="h-5 w-5 text-blue-500" />
+                          )}
+                        </div>
+                        <div className="flex-1 truncate">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium">
+                              {attachment.fileName || 'Document'}
+                            </p>
+                            <ExternalLink className="h-4 w-4 text-gray-500" />
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Uploaded:{' '}
+                            {formatDate(
+                              attachment.uploadedAt || attachment.createdAt
+                            )}
+                          </p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+          </div>
+
+          <div className="flex justify-end mt-4">
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DoctorLayout>
   );
 };
