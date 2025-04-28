@@ -26,7 +26,7 @@ import { AppContext } from '@/context/appContext';
 import axios from 'axios'; // ✅ Added axios for API call
 
 const patients = [
-  { id: '3EL4TIAZ', name: 'John Doe', email: 'john@example.com' },
+  { id: '3EL4TIAZ', name: 'Aman', email: 'john@example.com' },
   { id: 'P002', name: 'Jane Smith', email: 'jane@example.com' },
   { id: 'P003', name: 'Mike Johnson', email: 'mike@example.com' },
 ];

@@ -46,17 +46,19 @@ const UploadDocument = () => {
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile.type === 'application/pdf') {
+      if ((droppedFile.type === 'application/pdf', 'image/png', 'image/jpeg')) {
         setFile(droppedFile);
 
         // Auto-fill document name from filename
         if (!documentName) {
-          setDocumentName(droppedFile.name.replace('.pdf', ''));
+          setDocumentName(
+            droppedFile.name.replace(/\.(pdf|png|jpg|jpeg)$/i, '')
+          );
         }
       } else {
         toast({
           title: 'Invalid file type',
-          description: 'Please upload a PDF document',
+          description: 'Please upload a PDF, PNG, or JPEG file',
           variant: 'destructive',
         });
       }
@@ -66,17 +68,21 @@ const UploadDocument = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
-      if (selectedFile.type === 'application/pdf') {
+      if (
+        (selectedFile.type === 'application/pdf', 'image/png', 'image/jpeg')
+      ) {
         setFile(selectedFile);
 
         // Auto-fill document name from filename
         if (!documentName) {
-          setDocumentName(selectedFile.name.replace('.pdf', ''));
+          setDocumentName(
+            selectedFile.name.replace(/\.(pdf|png|jpg|jpeg)$/i, '')
+          );
         }
       } else {
         toast({
           title: 'Invalid file type',
-          description: 'Please upload a PDF document',
+          description: 'Please upload a PDF, PNG, or JPEG file',
           variant: 'destructive',
         });
       }
@@ -134,7 +140,7 @@ const UploadDocument = () => {
     try {
       const formData = new FormData();
       formData.append('files', file); // 'files' matches your multer upload.array("files", 5)
-      formData.append('doctorId','3FP1LBJV'); // You might need to select this from UI late
+      formData.append('doctorId', '3FP1LBJV'); // You might need to select this from UI late
       formData.append('recordType', documentType); // Prescription / Diagnosis / LabReport etc.
       formData.append('title', documentName);
       formData.append('description', description);
@@ -164,8 +170,7 @@ const UploadDocument = () => {
         setIsUploading(false);
         toast({
           title: 'Upload failed',
-          description:
-            data.message ,
+          description: data.message,
           variant: 'destructive',
         });
       }
@@ -228,7 +233,7 @@ const UploadDocument = () => {
                     </div>
                     <div>
                       <p className="text-lg font-medium">
-                        Drag and drop your PDF file here
+                        Drag and drop PDF, PNG, or JPEG file here
                       </p>
                       <p className="text-gray-500 mt-1">
                         or click to browse from your computer
@@ -237,7 +242,7 @@ const UploadDocument = () => {
                     <div>
                       <Input
                         type="file"
-                        accept=".pdf"
+                        accept=".pdf,.png, .jpg, .jpeg"
                         onChange={handleFileChange}
                         className="hidden"
                         id="file-upload"

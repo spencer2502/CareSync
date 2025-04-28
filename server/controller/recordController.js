@@ -1,8 +1,8 @@
-import recordModel from "../models/recordModel.js";
-import doctorModel from "../models/doctorModel.js";
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
-import userModel from "../models/userModel.js";
+import recordModel from '../models/recordModel.js';
+import doctorModel from '../models/doctorModel.js';
+import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs';
+import userModel from '../models/userModel.js';
 
 // Cloudinary config
 cloudinary.config({
@@ -17,15 +17,15 @@ const uploadOnCloudinary = async (localFilePath) => {
     if (!localFilePath) return null;
 
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
+      resource_type: 'raw',
     });
 
-    console.log("File uploaded to Cloudinary:", response.secure_url);
+    console.log('File uploaded to Cloudinary:', response.secure_url);
     fs.unlinkSync(localFilePath); // delete local file after upload
     return response;
   } catch (err) {
     fs.unlinkSync(localFilePath);
-    console.error("Cloudinary upload error:", err);
+    console.error('Cloudinary upload error:', err);
     return null;
   }
 };
@@ -49,7 +49,7 @@ export const createRecord = async (req, res) => {
     if (!doctorId || !title) {
       return res.status(400).json({
         success: false,
-        message: "Doctor ID and title are required.",
+        message: 'Doctor ID and title are required.',
       });
     }
 
@@ -59,7 +59,7 @@ export const createRecord = async (req, res) => {
     if (!doctor) {
       return res.status(400).json({
         success: false,
-        message: "No doctor found with the provided doctorId",
+        message: 'No doctor found with the provided doctorId',
       });
     }
     doctorObjectId = doctor._id;
@@ -68,7 +68,7 @@ export const createRecord = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "No user found with the provided userId",
+        message: 'No user found with the provided userId',
       });
     }
 
@@ -104,37 +104,37 @@ export const createRecord = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Record created successfully",
+      message: 'Record created successfully',
       data: newRecord,
     });
   } catch (error) {
-    console.error("Error creating record:", error);
+    console.error('Error creating record:', error);
     res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
     });
   }
 };
 
 export const getRecord = async (req, res) => {
   try {
-    const  recordId  = req.params.id;
+    const recordId = req.params.id;
 
     if (!recordId) {
       return res.status(400).json({
         success: false,
-        message: "Record ID is required.",
+        message: 'Record ID is required.',
       });
     }
 
     const record = await recordModel
       .findById(recordId)
-      .populate("doctor", "name specialty");
+      .populate('doctor', 'name specialty');
 
     if (!record) {
       return res.status(404).json({
         success: false,
-        message: "Record not found.",
+        message: 'Record not found.',
       });
     }
 
@@ -143,10 +143,10 @@ export const getRecord = async (req, res) => {
       data: record,
     });
   } catch (error) {
-    console.error("Error fetching record:", error);
+    console.error('Error fetching record:', error);
     res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
     });
   }
 };
