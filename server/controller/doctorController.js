@@ -106,7 +106,7 @@ export const sendRequest = async (req, res) => {
       documentType: documentType || 'General',
       urgency: urgency || 'Normal',
       reason: reason || '',
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // Changed to 1 hour
     });
 
     await newRequest.save();
