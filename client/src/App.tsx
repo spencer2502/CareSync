@@ -59,7 +59,7 @@ const App = () => (
           <Route path="/help" element={<HelpPage />} />
           <Route path="/approval-requests" element={<ApprovalRequests />} />
           
-          {/* Doctor Routes */}
+          {/* Doctor Routes */} 
           <Route path="/doctor/login" element={<DoctorLogin />} />
           <Route path="/doctor/verify" element={<DoctorOtpVerification />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />

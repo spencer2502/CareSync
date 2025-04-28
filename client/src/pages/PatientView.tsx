@@ -19,6 +19,10 @@ import {
   AlertTriangle,
   ExternalLink,
   Tag,
+  Heart,
+  Scale,
+  Ruler,
+  Bookmark,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import axios from 'axios';
@@ -37,6 +41,7 @@ axios.defaults.withCredentials = true;
 
 // Helper function to check if a document's viewing period is still active
 const isDocumentViewable = (expiresAt) => {
+  if (!expiresAt) return false;
   const now = new Date();
   const expiry = new Date(expiresAt);
   return now < expiry;
@@ -44,6 +49,7 @@ const isDocumentViewable = (expiresAt) => {
 
 // Helper to format the remaining time
 const formatRemainingTime = (expiresAt) => {
+  if (!expiresAt) return 'N/A';
   const now = new Date();
   const expiry = new Date(expiresAt);
   const diffMs = expiry.getTime() - now.getTime();
@@ -67,12 +73,31 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
+// Helper function to calculate age from date of birth
+const calculateAge = (dateOfBirth) => {
+  if (!dateOfBirth) return null;
+
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  return age;
+};
+
 const PatientView = () => {
   const { id } = useParams();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [approvedDocuments, setApprovedDocuments] = useState([]);
   const [allDocuments, setAllDocuments] = useState([]);
   const { backendUrl } = useContext(AppContext);
 
@@ -144,37 +169,33 @@ const PatientView = () => {
   };
 
   const handleViewDocument = async (doc) => {
+    // Set the selected document and show dialog
+    setSelectedDocument(doc);
+    setShowDialog(true);
+
     if (isDocumentViewable(doc.expiresAt)) {
       try {
         // Record document view
         const baseUrl = backendUrl?.endsWith('/')
           ? backendUrl
           : `${backendUrl}/`;
-        await axios.post(`${baseUrl}api/doctor/documents/${doc.id}/view`);
-
-        // Set the selected document and show dialog instead of opening in new tab
-        setSelectedDocument(doc);
-        setShowDialog(true);
+        await axios.post(
+          `${baseUrl}api/doctor/documents/${doc.id || doc._id}/view`
+        );
 
         toast({
           title: 'Document Accessed',
           description: `You are viewing ${
-            doc.fileName || doc.name
+            doc.fileName || doc.title || doc.name
           }. This access expires in 30 minutes.`,
         });
       } catch (err) {
         toast({
           title: 'Error',
-          description: 'Failed to access document. Please try again.',
+          description: 'Failed to record document access. Please try again.',
           variant: 'destructive',
         });
       }
-    } else {
-      toast({
-        title: 'Access Expired',
-        description: "This document's viewing period has expired.",
-        variant: 'destructive',
-      });
     }
   };
 
@@ -188,6 +209,8 @@ const PatientView = () => {
     switch (type) {
       case 'Diagnosis':
         return 'bg-blue-100 text-blue-800';
+      case 'Lab Result':
+        return 'bg-purple-100 text-purple-800';
       case 'General':
         return 'bg-green-100 text-green-800';
       default:
@@ -246,6 +269,9 @@ const PatientView = () => {
     );
   }
 
+  // Calculate age from date of birth
+  const patientAge = calculateAge(patient.dateOfBirth);
+
   return (
     <DoctorLayout title={`Patient: ${patient.name}`}>
       <div className="mb-4">
@@ -270,6 +296,15 @@ const PatientView = () => {
               <h2 className="text-xl font-bold text-center">{patient.name}</h2>
 
               <div className="space-y-3 pt-4">
+                {/* Patient ID */}
+                <div className="flex items-start gap-3">
+                  <Bookmark className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500">Patient ID</p>
+                    <p>{patient.patientId || id}</p>
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-3">
                   <Mail className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div>
@@ -295,49 +330,69 @@ const PatientView = () => {
                       <p className="text-sm text-gray-500">Date of Birth</p>
                       <p>
                         {new Date(patient.dateOfBirth).toLocaleDateString()}
+                        {patientAge !== null && ` (${patientAge} years)`}
                       </p>
                     </div>
                   </div>
                 )}
               </div>
 
-              {(patient.bloodType || patient.height || patient.weight) && (
-                <div className="pt-4 border-t">
-                  <h3 className="font-medium mb-2">Medical Information</h3>
-                  <div className="grid grid-cols-2 gap-y-3 gap-x-2">
-                    {patient.bloodType && (
-                      <div>
-                        <p className="text-sm text-gray-500">Blood Type</p>
-                        <p className="font-medium">{patient.bloodType}</p>
-                      </div>
-                    )}
-                    {patient.height && (
-                      <div>
-                        <p className="text-sm text-gray-500">Height</p>
-                        <p>{patient.height}</p>
-                      </div>
-                    )}
-                    {patient.weight && (
-                      <div>
-                        <p className="text-sm text-gray-500">Weight</p>
-                        <p>{patient.weight}</p>
-                      </div>
-                    )}
+              <div className="pt-4 border-t">
+                <h3 className="font-medium mb-2">Medical Information</h3>
+                <div className="grid grid-cols-2 gap-y-3 gap-x-2">
+                  {/* Blood Group */}
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <Heart className="h-4 w-4 text-red-500" />
+                      <p className="text-sm text-gray-500">Blood Type</p>
+                    </div>
+                    <p className="font-medium">
+                      {patient.bloodType ||
+                        patient.bloodGroup ||
+                        'Not Available'}
+                    </p>
+                  </div>
+
+                  {/* Height */}
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <Ruler className="h-4 w-4 text-gray-500" />
+                      <p className="text-sm text-gray-500">Height</p>
+                    </div>
+                    <p>{patient.height || 'Not Available'}</p>
+                  </div>
+
+                  {/* Weight */}
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <Scale className="h-4 w-4 text-gray-500" />
+                      <p className="text-sm text-gray-500">Weight</p>
+                    </div>
+                    <p>{patient.weight || 'Not Available'}</p>
+                  </div>
+
+                  {/* Age */}
+                  <div>
+                    <p className="text-sm text-gray-500">Age</p>
+                    <p>
+                      {patientAge !== null
+                        ? `${patientAge} years`
+                        : 'Not Available'}
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="lg:col-span-2">
-          <Tabs defaultValue="approved">
+          <Tabs defaultValue="documents">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Patient Records</CardTitle>
                 <TabsList>
-                  <TabsTrigger value="approved">Approved Documents</TabsTrigger>
-                  <TabsTrigger value="documents">All Documents</TabsTrigger>
+                  <TabsTrigger value="documents">Documents</TabsTrigger>
                   {patient.conditions && patient.conditions.length > 0 && (
                     <TabsTrigger value="conditions">Conditions</TabsTrigger>
                   )}
@@ -348,9 +403,9 @@ const PatientView = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <TabsContent value="approved" className="space-y-4">
+              <TabsContent value="documents" className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium">Approved Documents</h3>
+                  <h3 className="font-medium">Medical Documents</h3>
                   <Link to="/doctor/document-history">
                     <Button variant="outline" size="sm">
                       <History className="mr-2 h-4 w-4" /> View History
@@ -359,8 +414,8 @@ const PatientView = () => {
                 </div>
 
                 <div className="divide-y">
-                  {approvedDocuments.length > 0 ? (
-                    approvedDocuments.map((doc) => {
+                  {allDocuments.length > 0 ? (
+                    allDocuments.map((doc) => {
                       const isViewable = isDocumentViewable(doc.expiresAt);
                       return (
                         <div
@@ -383,90 +438,29 @@ const PatientView = () => {
                             </div>
                             <div>
                               <p className="font-medium">
-                                {doc.fileName || doc.name}
+                                {doc.title || doc.fileName || doc.name}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {doc.recordType || doc.type}
+                                {doc.recordType || doc.type || 'Document'} •{' '}
+                                {formatDate(doc.createdAt)}
+                                {isViewable && (
+                                  <span className="ml-2 text-xs text-green-600">
+                                    {formatRemainingTime(doc.expiresAt)}
+                                  </span>
+                                )}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {isViewable ? (
-                              <>
-                                <div className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full flex items-center">
-                                  <Clock className="h-3 w-3 mr-1" />
-                                  {formatRemainingTime(doc.expiresAt)}
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="default"
-                                  onClick={() => handleViewDocument(doc)}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" /> View
-                                </Button>
-                              </>
-                            ) : (
-                              <div className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                                Expired
-                              </div>
-                            )}
-                          </div>
+                          <Button
+                            size="sm"
+                            variant={isViewable ? 'default' : 'outline'}
+                            onClick={() => handleViewDocument(doc)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" /> View
+                          </Button>
                         </div>
                       );
                     })
-                  ) : (
-                    <div className="py-8 text-center">
-                      <p className="text-gray-500">
-                        No approved documents available
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="documents" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-medium">Medical Documents</h3>
-                  <Link to={`/doctor/patients/${id}/documents`}>
-                    <Button variant="outline" size="sm">
-                      View All
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="divide-y">
-                  {allDocuments.length > 0 ? (
-                    allDocuments.map((doc) => (
-                      <div
-                        key={doc.id || doc._id}
-                        className="py-3 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-gray-500" />
-                          </div>
-                          <div>
-                            <p className="font-medium">
-                              {doc.title || doc.title}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {doc.title || doc.type} •{' '}
-                              {new Date(doc.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setSelectedDocument(doc);
-                            setShowDialog(true);
-                          }}
-                        >
-                          View
-                        </Button>
-                      </div>
-                    ))
                   ) : (
                     <div className="py-8 text-center">
                       <p className="text-gray-500">No documents available</p>
