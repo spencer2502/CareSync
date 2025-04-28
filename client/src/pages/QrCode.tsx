@@ -1,15 +1,27 @@
-
-import React, { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { QrCode as QrCodeIcon, Download, Copy } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import React, { useState, useEffect } from 'react';
+import DashboardLayout from '@/components/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  QrCode as QrCodeIcon,
+  Download,
+  Copy,
+  AlertCircle,
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import axios from 'axios';
 
 // Utility function to create a random string for QR value
 function getRandomString(length = 12) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let str = "";
+  const chars =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let str = '';
   for (let i = 0; i < length; i++)
     str += chars[Math.floor(Math.random() * chars.length)];
   return str;
@@ -17,8 +29,82 @@ function getRandomString(length = 12) {
 
 const QrCodePage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [qrCode, setQrCode] = useState<string | null>(null);
-  const [qrValue, setQrValue] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState(null);
+  const [qrValue, setQrValue] = useState(null);
+  const [hasEmergencyRecords, setHasEmergencyRecords] = useState(true);
+  const [recordCount, setRecordCount] = useState(0);
+  const [emergencyUrl, setEmergencyUrl] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // Get patient ID from auth context or local storage
+  // Replace this with your actual auth system implementation
+  const patientId = localStorage.getItem('userId') || '3EL4TIAZ';
+
+  // NOTE: These axios routes are added but not called, as requested
+  // Check if patient has emergency records route
+  const checkEmergencyRecords = async () => {
+    try {
+      const response = await axios.get(
+        `/api/records/${patientId}/emergency-count`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      setRecordCount(response.data.count);
+      setHasEmergencyRecords(response.data.count > 0);
+    } catch (error) {
+      setHasEmergencyRecords(false);
+      console.error('Error checking emergency records:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to check emergency records',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Generate QR code route
+  const generateQrCodeFromApi = async () => {
+    try {
+      // Call your backend API to generate the QR code
+      const response = await axios.get(
+        `/api/patients/${patientId}/emergency-qr`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setQrCode(response.data.qrCodeImage);
+        setEmergencyUrl(response.data.emergencyUrl);
+
+        toast({
+          title: 'QR code generated',
+          description: 'Your emergency QR code is ready to use',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: response.data.message || 'Failed to generate QR code',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast({
+        title: 'Error',
+        description:
+          error.response?.data?.message ||
+          'There was a problem generating your QR code',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleGenerateQR = () => {
     setIsGenerating(true);
@@ -37,10 +123,11 @@ const QrCodePage = () => {
       setIsGenerating(false);
       setQrCode(qrUrl);
       setQrValue(newQrValue);
+      setEmergencyUrl(`https://caresync.example.com/emergency/${newQrValue}`);
 
       toast({
-        title: "QR code generated",
-        description: "Your emergency QR code is ready to use",
+        title: 'QR code generated',
+        description: 'Your emergency QR code is ready to use',
       });
     }, 1200);
   };
@@ -49,16 +136,16 @@ const QrCodePage = () => {
     if (!qrCode) return;
 
     // Download the QR image shown
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = qrCode;
-    link.download = "caresync-emergency-qr.png";
+    link.download = 'caresync-emergency-qr.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     toast({
-      title: "QR code downloaded",
-      description: "Your emergency QR code has been saved",
+      title: 'QR code downloaded',
+      description: 'Your emergency QR code has been saved',
     });
   };
 
@@ -67,14 +154,14 @@ const QrCodePage = () => {
     if (qrValue) {
       await navigator.clipboard.writeText(qrValue);
       toast({
-        title: "QR code copied",
-        description: "The QR data has been copied to clipboard",
+        title: 'QR code copied',
+        description: 'The QR data has been copied to clipboard',
       });
     } else {
       toast({
-        title: "Unable to copy",
-        description: "Please generate a QR code first.",
-        variant: "destructive",
+        title: 'Unable to copy',
+        description: 'Please generate a QR code first.',
+        variant: 'destructive',
       });
     }
   };
@@ -86,7 +173,8 @@ const QrCodePage = () => {
           <CardHeader>
             <CardTitle>Emergency Medical Access</CardTitle>
             <CardDescription>
-              Generate a QR code that emergency responders can scan to access your critical medical information.
+              Generate a QR code that emergency responders can scan to access
+              your critical medical information.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -108,6 +196,13 @@ const QrCodePage = () => {
                 )}
               </div>
 
+              {qrCode && emergencyUrl && (
+                <div className="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600 break-all">
+                  <p className="mb-1 font-medium">Emergency Access URL:</p>
+                  <p>{emergencyUrl}</p>
+                </div>
+              )}
+
               {qrCode ? (
                 <div className="flex justify-center space-x-4">
                   <Button onClick={handleDownload}>
@@ -118,17 +213,14 @@ const QrCodePage = () => {
                   </Button>
                 </div>
               ) : (
-                <Button 
-                  onClick={handleGenerateQR} 
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? "Generating..." : "Generate QR Code"}
+                <Button onClick={handleGenerateQR} disabled={isGenerating}>
+                  {isGenerating ? 'Generating...' : 'Generate QR Code'}
                 </Button>
               )}
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="caresync-3d-card">
             <CardHeader>
@@ -136,7 +228,8 @@ const QrCodePage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Emergency responders can quickly access your critical medical information.
+                Emergency responders can quickly access your critical medical
+                information.
               </p>
             </CardContent>
           </Card>
@@ -147,7 +240,8 @@ const QrCodePage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                You control exactly what information is visible during emergencies.
+                You control exactly what information is visible during
+                emergencies.
               </p>
             </CardContent>
           </Card>
@@ -158,7 +252,8 @@ const QrCodePage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Print it, save it to your phone, or share it with family members.
+                Print it, save it to your phone, or share it with family
+                members.
               </p>
             </CardContent>
           </Card>
@@ -169,4 +264,3 @@ const QrCodePage = () => {
 };
 
 export default QrCodePage;
-
