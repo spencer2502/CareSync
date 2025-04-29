@@ -1,11 +1,11 @@
 import express from "express";
 import userAuth from "../middleware/userAuth.js";
 
-import { getUserData,getAllRequests,acceptRequest, getUserRecords } from "../controller/userController.js";
+import { getUserData,getAllRequests,acceptRequest, getUserRecords, rejectRequest, revokeAccess } from "../controller/userController.js";
 
 import { upload } from "../middleware/multerMiddleware.js";
 
-import { createRecord, getRecord } from "../controller/recordController.js";
+import { createRecord, getRecord , updateRecord , deleteRecord } from "../controller/recordController.js";
 
 const userRouter = express.Router();
 
@@ -27,5 +27,11 @@ userRouter.get("/getUserRecords", userAuth,
 )
 
 userRouter.get("/getRecord/:id", userAuth, getRecord); // get record by id
+
+userRouter.put('/updateRecord/:id', userAuth, updateRecord); // update record by id
+userRouter.delete('/deleteRecord/:id', userAuth, deleteRecord);
+
+userRouter.post('/rejectRequest',userAuth, rejectRequest)
+userRouter.post('/revokeAccess',userAuth, revokeAccess)
 
 export default userRouter;

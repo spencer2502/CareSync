@@ -19,6 +19,9 @@ import {
   Eye,
   ExternalLink,
   AlertTriangle,
+  Trash,
+  Edit,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,8 +38,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
+  DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 import axios from 'axios';
 import { AppContext } from '../context/appContext'; // Adjust path as needed
 
@@ -77,12 +94,20 @@ interface ApiResponse {
 const MedicalRecordsViewer: React.FC = () => {
   const [records, setRecords] = useState<Record[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const { backendUrl } = useContext(AppContext);
   const [showDialog, setShowDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    recordType: '',
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -137,9 +162,112 @@ const MedicalRecordsViewer: React.FC = () => {
   };
 
   const handleViewRecord = (record: Record) => {
-    setSelectedRecord(record);  
+    setSelectedRecord(record);
     setShowDialog(true);
-    // navigate(`/patient-document/${record._id}`); // Navigate to the document view page
+  };
+
+  const handleEditRecord = (record: Record) => {
+    setSelectedRecord(record);
+    setEditFormData({
+      title: record.title,
+      description: record.description,
+      recordType: record.recordType,
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteRecord = (record: Record) => {
+    setSelectedRecord(record);
+    setShowDeleteDialog(true);
+  };
+
+  const submitEditRecord = async () => {
+    if (!selectedRecord) return;
+
+    try {
+      setActionLoading(true);
+      const baseUrl = backendUrl.endsWith('/') ? backendUrl : `${backendUrl}/`;
+
+      const { data } = await axios.put(
+        `${baseUrl}api/user/updateRecord/${selectedRecord._id}`,
+        editFormData
+      );
+
+      if (data.success) {
+        // Update the record in the local state
+        const updatedRecords = records.map((record) =>
+          record._id === selectedRecord._id
+            ? { ...record, ...editFormData }
+            : record
+        );
+
+        setRecords(updatedRecords);
+        setShowEditDialog(false);
+
+        toast({
+          title: 'Record updated',
+          description: 'Your medical record has been updated successfully',
+        });
+      } else {
+        throw new Error(data.message || 'Failed to update record');
+      }
+    } catch (err: any) {
+      console.error('Error updating record:', err);
+
+      toast({
+        title: 'Update failed',
+        description:
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to update record',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const confirmDeleteRecord = async () => {
+    if (!selectedRecord) return;
+
+    try {
+      setActionLoading(true);
+      const baseUrl = backendUrl.endsWith('/') ? backendUrl : `${backendUrl}/`;
+
+      const { data } = await axios.delete(
+        `${baseUrl}api/user/deleteRecord/${selectedRecord._id}`
+      );
+
+      if (data.success) {
+        // Remove the record from the local state
+        const updatedRecords = records.filter(
+          (record) => record._id !== selectedRecord._id
+        );
+
+        setRecords(updatedRecords);
+        setShowDeleteDialog(false);
+
+        toast({
+          title: 'Record deleted',
+          description: 'Your medical record has been deleted successfully',
+        });
+      } else {
+        throw new Error(data.message || 'Failed to delete record');
+      }
+    } catch (err: any) {
+      console.error('Error deleting record:', err);
+
+      toast({
+        title: 'Deletion failed',
+        description:
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to delete record',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const filteredRecords = records.filter((record) => {
@@ -227,6 +355,7 @@ const MedicalRecordsViewer: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
                         <div className="text-gray-500">Loading records...</div>
                       </div>
                     </TableCell>
@@ -265,14 +394,30 @@ const MedicalRecordsViewer: React.FC = () => {
                         {record.attachments.length === 1 ? 'file' : 'files'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleViewRecord(record)}
-                          className="flex items-center gap-2"
-                        >
-                          <Eye className="h-4 w-4" /> View
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewRecord(record)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditRecord(record)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDeleteRecord(record)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -292,6 +437,7 @@ const MedicalRecordsViewer: React.FC = () => {
         </Card>
       )}
 
+      {/* View Record Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -378,13 +524,135 @@ const MedicalRecordsViewer: React.FC = () => {
             ) : null}
           </div>
 
-          <div className="flex justify-end mt-4">
+          <DialogFooter className="flex justify-between mt-4">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDialog(false);
+                  handleEditRecord(selectedRecord!);
+                }}
+              >
+                <Edit className="h-4 w-4 mr-2" /> Edit
+              </Button>
+              <Button
+                variant="outline"
+                className="text-red-600 hover:text-red-700"
+                onClick={() => {
+                  setShowDialog(false);
+                  handleDeleteRecord(selectedRecord!);
+                }}
+              >
+                <Trash className="h-4 w-4 mr-2" /> Delete
+              </Button>
+            </div>
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Record Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Medical Record</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Record Title</Label>
+              <Input
+                id="title"
+                value={editFormData.title}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, title: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="recordType">Record Type</Label>
+              <Select
+                value={editFormData.recordType}
+                onValueChange={(value) =>
+                  setEditFormData({ ...editFormData, recordType: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select record type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Diagnosis">Diagnosis</SelectItem>
+                  <SelectItem value="General">General</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={editFormData.description}
+                onChange={(e) =>
+                  setEditFormData({
+                    ...editFormData,
+                    description: e.target.value,
+                  })
+                }
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submitEditRecord} disabled={actionLoading}>
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the medical record "
+              {selectedRecord?.title}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={confirmDeleteRecord}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
