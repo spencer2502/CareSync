@@ -15,7 +15,7 @@ try:
         st.success(f"✅ Found {len(data)} audit logs")
 
         # Create DataFrame with clean column names
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(data) 
         df.rename(columns={
             "time": "time",
             "userType": "user_type",

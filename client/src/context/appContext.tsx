@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { createContext, useState } from 'react';
 import { toast } from 'sonner';
+import { json } from 'stream/consumers';
 
 export const AppContext = createContext({
   backendUrl: '',
@@ -41,7 +42,7 @@ export const AppContextProvider = (props) => {
       toast.error(error.message);
 
     }
-  }
+  }   
 
   const value = {
     backendUrl,
